@@ -26,6 +26,8 @@ import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.text.InputType;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -34,6 +36,7 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
+import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -84,7 +87,7 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.drawer_layout);
-
+		
 		mTitle = mDrawerTitle = getTitle();
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
 		mDrawerList = (ListView) findViewById(R.id.left_drawer);
@@ -108,7 +111,7 @@ public class MainActivity extends Activity {
 		// enable ActionBar app icon to behave as action to toggle nav drawer
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
-
+		
 		// ActionBarDrawerToggle ties together the the proper interactions
 		// between the sliding drawer and the action bar app icon
 		mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
@@ -132,14 +135,46 @@ public class MainActivity extends Activity {
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 
 		if (savedInstanceState == null) {
-			selectItem(0);
+			selectItem(mUserNamesToShow[0]);
 		}
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	public boolean onCreateOptionsMenu(final Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main, menu);
+		
+		
+		final SearchView search = (SearchView) menu.findItem(R.id.action_bar_search_user).getActionView();
+		
+		//search.setFocusable(true);
+		//search.setIconified(false);
+		//search.requestFocusFromTouch();
+		search.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+		if (search == null){
+			Log.e("Paul","Search is null");
+		}
+		final SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
+		    @Override
+		    public boolean onQueryTextChange(String newText) {
+		        // Do something
+		        return true;
+		    }
+
+		    @Override
+		    public boolean onQueryTextSubmit(String query) {
+		        // Do something
+		    	selectItem(query);
+		    	//search.clearFocus();
+				//search.setIconified(true);
+		    	menu.findItem(R.id.action_bar_search_user).collapseActionView();
+		    	
+		        return true;
+		    }
+		};
+		search.setOnQueryTextListener(queryTextListener);
+		
+		
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -149,7 +184,10 @@ public class MainActivity extends Activity {
 		// If the nav drawer is open, hide action items related to the content
 		// view
 		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-		menu.findItem(R.id.action_websearch).setVisible(!drawerOpen);
+		menu.findItem(R.id.action_bar_search_user).setVisible(!drawerOpen);
+		SearchView search = ((SearchView) menu.findItem(R.id.action_bar_search_user).getActionView());
+		//search.clearFocus();
+		//search.setIconified(false);
 		return super.onPrepareOptionsMenu(menu);
 	}
 
@@ -162,16 +200,17 @@ public class MainActivity extends Activity {
 		}
 		// Handle action buttons
 		switch (item.getItemId()) {
-		case R.id.action_websearch:
+		case R.id.action_bar_search_user:
 			// create intent to perform web search for this planet
 			Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
 			intent.putExtra(SearchManager.QUERY, getActionBar().getTitle());
 			// catch event that there's no activity to handle intent
-			if (intent.resolveActivity(getPackageManager()) != null) {
-				startActivity(intent);
-			} else {
-				Toast.makeText(this, R.string.app_not_available, Toast.LENGTH_LONG).show();
-			}
+			//selectItem();
+			//if (intent.resolveActivity(getPackageManager()) != null) {
+				//tartActivity(intent);
+			//} else {
+			//	Toast.makeText(this, R.string.app_not_available, Toast.LENGTH_LONG).show();
+			//}
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -183,24 +222,24 @@ public class MainActivity extends Activity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			// view.findViewById(R.id.)
-			selectItem(position);
+			selectItem(mUserNamesToShow[position]);
 		}
 	}
 
-	private void selectItem(int position) {
+	private void selectItem(String userName) {
 		// update the main content by replacing fragments
 		Fragment fragment = new UserProfileFragment();
 		Bundle args = new Bundle();
 
-		args.putString(UserProfileFragment.ARG_USERNAME, mUserNamesToShow[position]);
+		args.putString(UserProfileFragment.ARG_USERNAME, userName);
 		fragment.setArguments(args);
 
 		FragmentManager fragmentManager = getFragmentManager();
 		fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 
 		// update selected item and title, then close the drawer
-		mDrawerList.setItemChecked(position, true);
-		setTitle(mUserNamesToShow[position]);
+		//mDrawerList.setItemChecked(position, true);
+		setTitle(userName);
 		mDrawerLayout.closeDrawer(mDrawerList);
 	}
 
