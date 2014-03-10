@@ -39,6 +39,8 @@ import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.graphics.Color;
+import android.graphics.drawable.*;
 
 /**
  * This example illustrates a common usage of the DrawerLayout widget in the
@@ -92,7 +94,7 @@ public class MainActivity extends Activity {
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
 		mDrawerList = (ListView) findViewById(R.id.left_drawer);
 		mDrawerContainer = findViewById(R.id.content_frame);
-		mUserNamesToShow = new String[] { "Repkap11", "Za phod", "Great One", "Zezima", "Repkam09","S U O M I","Jake","Drumgun" };
+		mUserNamesToShow = new String[] { "Repkap11", "Za phod", "Great One", "Zezima", "Repkam09","S U O M I","Jake","Drumgun","Alkan"};
 		// set a custom shadow that overlays the main content when the drawer
 		// opens
 		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
@@ -111,7 +113,7 @@ public class MainActivity extends Activity {
 		// enable ActionBar app icon to behave as action to toggle nav drawer
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
-		
+		getActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#008b3b")));
 		// ActionBarDrawerToggle ties together the the proper interactions
 		// between the sliding drawer and the action bar app icon
 		mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
