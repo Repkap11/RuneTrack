@@ -108,7 +108,7 @@ public class UserProfileFragment extends Fragment {
 		public void onReceive(Context context, Intent intent) {
 			// Log.e("Paul", "before crash");
 			downloadResult = intent.getParcelableArrayListExtra(DownloadIntentService.PARAM_USERNAME);
-			UserProfileSkill topHeader = new UserProfileSkill("", "Current  ", "Runescape", "Stats", "Today", "", "This", "Week");
+			UserProfileSkill topHeader = new UserProfileSkill("", "Curnt ", "Runescape", "Stats", "Today", "", "This", "Week");
 			UserProfileSkill header = new UserProfileSkill("", "Level", "Xp", "Rank", "Lvls", "Xp", "Lvls", "Xp");
 			downloadResult.add(0, topHeader);
 			downloadResult.add(1, header);
