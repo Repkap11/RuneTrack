@@ -77,7 +77,7 @@ import android.graphics.drawable.*;
  */
 public class MainActivity extends Activity {
 	private DrawerLayout mDrawerLayout;
-	private View mDrawerContainer;
+	//private View mDrawerContainer;
 	private ActionBarDrawerToggle mDrawerToggle;
 
 	private CharSequence mDrawerTitle;
@@ -93,7 +93,6 @@ public class MainActivity extends Activity {
 		mTitle = mDrawerTitle = getTitle();
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
 		mDrawerList = (ListView) findViewById(R.id.left_drawer);
-		mDrawerContainer = findViewById(R.id.content_frame);
 		mUserNamesToShow = new String[] { "Repkap11", "Za phod", "Great One", "Zezima", "Repkam09","S U O M I","Jake","Drumgun","Alkan"};
 		// set a custom shadow that overlays the main content when the drawer
 		// opens
