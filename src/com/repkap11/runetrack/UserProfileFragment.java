@@ -28,11 +28,13 @@ import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.*;
 
 /**
  * Fragment that appears in the "content_frame", shows a planet
@@ -44,6 +46,7 @@ public class UserProfileFragment extends Fragment {
 	public ArrayList<Parcelable> downloadResult;
 	private boolean needsDownload = true;
 	private String userName;
+	ViewSwitcher switcher;
 
 	public UserProfileFragment() {
 		// Empty constructor required for fragment subclasses
@@ -52,7 +55,6 @@ public class UserProfileFragment extends Fragment {
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-
 	}
 
 	@Override
@@ -89,6 +91,7 @@ public class UserProfileFragment extends Fragment {
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.user_profile, container, false);
+		switcher = (ViewSwitcher)rootView.findViewById(R.id.switcher);
 		userName = getArguments().getString(ARG_USERNAME);
 		mList = ((ListView) rootView.findViewById(R.id.content));
 		getActivity().setTitle(userName);
@@ -108,15 +111,20 @@ public class UserProfileFragment extends Fragment {
 		public void onReceive(Context context, Intent intent) {
 			// Log.e("Paul", "before crash");
 			downloadResult = intent.getParcelableArrayListExtra(DownloadIntentService.PARAM_USERNAME);
-			UserProfileSkill topHeader = new UserProfileSkill("", "Current  ", "Runescape", "Stats", "Today", "", "This", "Week");
+			if (downloadResult.size() == 0){
+				Toast.makeText(UserProfileFragment.this.getActivity(),"Failure", Toast.LENGTH_SHORT).show();
+			} else{
+			UserProfileSkill topHeader = new UserProfileSkill("", "Curnt ", "Runescape", "Stats", "Today", "", "This", "Week");
 			UserProfileSkill header = new UserProfileSkill("", "Level", "Xp", "Rank", "Lvls", "Xp", "Lvls", "Xp");
 			downloadResult.add(0, topHeader);
 			downloadResult.add(1, header);
 			applyDownloadResult(downloadResult);
+			}
 		}
 	}
 
 	public void applyDownloadResult(ArrayList<Parcelable> result) {
+		switcher.showNext();
 		mList.setAdapter(new ArrayAdapter<Parcelable>(this.getActivity(), R.layout.user_profile_holder, result) {
 			private UserProfileBounds bounds;
 
