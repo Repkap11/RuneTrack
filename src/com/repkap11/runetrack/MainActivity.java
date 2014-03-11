@@ -32,7 +32,9 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.View.OnFocusChangeListener;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -107,7 +109,7 @@ public class MainActivity extends Activity {
 			}
 		});
 		mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
-
+		
 		// enable ActionBar app icon to behave as action to toggle nav drawer
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
@@ -128,8 +130,14 @@ public class MainActivity extends Activity {
 
 			public void onDrawerOpened(View drawerView) {
 				getActionBar().setTitle(mDrawerTitle);
+				
 				invalidateOptionsMenu(); // creates call to
 											// onPrepareOptionsMenu()
+			}
+			public void onDrawerStateChanged(int newState){
+				if (newState == DrawerLayout.STATE_DRAGGING){
+					invalidateOptionsMenu();
+				}
 			}
 		};
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
@@ -146,7 +154,8 @@ public class MainActivity extends Activity {
 		
 		
 		final SearchView search = (SearchView) menu.findItem(R.id.action_bar_search_user).getActionView();
-		
+		//getCurrentFocus().clearFocus();
+		//search.clearFocus();
 		//search.setFocusable(true);
 		//search.setIconified(false);
 		//search.requestFocusFromTouch();
@@ -172,8 +181,27 @@ public class MainActivity extends Activity {
 		        return true;
 		    }
 		};
+		OnClickListener clickListener = new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				Log.e("TAG","Clicked");
+				menu.findItem(R.id.action_bar_search_user).collapseActionView();
+				
+			}
+		};
+		OnFocusChangeListener focus =  new OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				Log.e("Paul","Focus Changed");
+				if (!hasFocus){
+					menu.findItem(R.id.action_bar_search_user).collapseActionView();
+				}
+				// TODO Auto-generated method stub
+				
+			}
+		};
 		search.setOnQueryTextListener(queryTextListener);
-		
+		search.setOnQueryTextFocusChangeListener(focus);
 		
 		return super.onCreateOptionsMenu(menu);
 	}
@@ -184,8 +212,9 @@ public class MainActivity extends Activity {
 		// If the nav drawer is open, hide action items related to the content
 		// view
 		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-		menu.findItem(R.id.action_bar_search_user).setVisible(!drawerOpen);
-		SearchView search = ((SearchView) menu.findItem(R.id.action_bar_search_user).getActionView());
+		MenuItem searchItem = menu.findItem(R.id.action_bar_search_user);
+		searchItem.setVisible(!drawerOpen);
+		searchItem.collapseActionView();
 		//search.clearFocus();
 		//search.setIconified(false);
 		return super.onPrepareOptionsMenu(menu);
