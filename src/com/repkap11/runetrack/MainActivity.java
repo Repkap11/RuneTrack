@@ -16,11 +16,20 @@
 
 package com.repkap11.runetrack;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
+
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.SearchManager;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
@@ -33,16 +42,16 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
-import android.view.ViewGroup;
 import android.view.View.OnFocusChangeListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
+import android.widget.BaseAdapter;
+import android.widget.EditText;
+import android.widget.ListAdapter;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
-import android.widget.Toast;
-import android.graphics.Color;
-import android.graphics.drawable.*;
 
 public class MainActivity extends Activity {
 	private DrawerLayout mDrawerLayout;
@@ -50,32 +59,55 @@ public class MainActivity extends Activity {
 
 	private CharSequence mDrawerTitle;
 	private CharSequence mTitle;
-	private String[] mUserNamesToShow;
+	private ArrayList<String> mUserNamesToShow;
 	private ListView mDrawerList;
+	private ListAdapter mAdapter;
+	private static final String USER_PROFILE_NAMES = "USER_PROFILE_NAMES";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.drawer_layout);
-
 		mTitle = mDrawerTitle = getTitle();
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
 		mDrawerList = (ListView) findViewById(R.id.left_drawer);
-		mUserNamesToShow = new String[] { "Repkap11", "Za phod", "Great One", "Zezima", "Repkam09", "S U O M I", "Jake", "Drumgun", "Alkan" };
+		SharedPreferences prefs = this.getPreferences(MODE_PRIVATE);
+		Set<String> set = prefs.getStringSet(USER_PROFILE_NAMES, new HashSet<String>());
+		mUserNamesToShow = new ArrayList<String>();
+		if (set == null || set.isEmpty()) {
+			Log.e("Paul", "Not using saved values");
+			mUserNamesToShow = new ArrayList<String>(Arrays.asList(new String[] { "Repkap11", "Za phod", "Great One", "Zezima", "Repkam09",
+					"S U O M I", "Jake", "Drumgun", "Alkan" }));
+		} else {
+			mUserNamesToShow.addAll(set);
+		}
 		// set a custom shadow that overlays the main content when the drawer
 		// opens
 		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 		// set up the drawer's list view with items and click listener
-		mDrawerList.setAdapter(new ArrayAdapter<String>(this, R.layout.drawer_list_item, mUserNamesToShow) {
+		mAdapter = new ArrayAdapter<String>(this, R.layout.drawer_list_item, mUserNamesToShow) {
+			@Override
+			public int getCount() {
+				return super.getCount() + 1;
+			}
+
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
 				// Log.e("Paul", "Getting view " + position);
 				TextView view = (TextView) getLayoutInflater().inflate(R.layout.drawer_list_item, parent, false);
-				view.setText(mUserNamesToShow[position]);
+				if (position == getCount() - 1) {
+					view.setText("Add New User");
+					view.setTag(false);// is user
+				} else {
+					view.setText(mUserNamesToShow.get(position));
+					view.setTag(true);// is user
+				}
+
 				return view;
 			}
-		});
+		};
 		mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+		mDrawerList.setOnItemLongClickListener(new DrawerItemLongClickListener());
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
 		mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
@@ -103,11 +135,21 @@ public class MainActivity extends Activity {
 				}
 			}
 		};
+		mDrawerList.setAdapter(mAdapter);
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 
 		if (savedInstanceState == null) {
-			selectItem(mUserNamesToShow[0]);
+			selectItem(mUserNamesToShow.get(0));
 		}
+	}
+
+	private void savePreferences() {
+		SharedPreferences prefs = this.getPreferences(MODE_PRIVATE);
+		Set<String> set = new HashSet<String>();
+		set.addAll(mUserNamesToShow);
+		Editor editor = prefs.edit();
+		editor.putStringSet(USER_PROFILE_NAMES, set);
+		editor.apply();
 	}
 
 	@Override
@@ -122,9 +164,6 @@ public class MainActivity extends Activity {
 		// search.setIconified(false);
 		// search.requestFocusFromTouch();
 		search.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-		if (search == null) {
-			Log.e("Paul", "Search is null");
-		}
 		final SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
 			@Override
 			public boolean onQueryTextChange(String newText) {
@@ -158,8 +197,6 @@ public class MainActivity extends Activity {
 				if (!hasFocus) {
 					menu.findItem(R.id.action_bar_search_user).collapseActionView();
 				}
-				// TODO Auto-generated method stub
-
 			}
 		};
 		search.setOnQueryTextListener(queryTextListener);
@@ -206,7 +243,59 @@ public class MainActivity extends Activity {
 		@Override
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			// view.findViewById(R.id.)
-			selectItem(mUserNamesToShow[position]);
+			if (view.getTag().equals(true)) {
+				selectItem(mUserNamesToShow.get(position));
+			} else {
+				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+				builder.setTitle("Enter Username");
+				// Set up the input
+				final EditText input = new EditText(MainActivity.this);
+				input.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+				builder.setView(input);
+				builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						String userName = input.getText().toString();
+						if (!mUserNamesToShow.contains(userName)) {
+							mUserNamesToShow.add(userName);
+							((BaseAdapter) mAdapter).notifyDataSetChanged();
+							savePreferences();
+							selectItem(userName);
+						}
+					}
+				});
+				builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+					@Override
+					public void onClick(DialogInterface dialog, int which) {
+						dialog.cancel();
+					}
+				});
+				builder.show();
+			}
+		}
+	}
+
+	private class DrawerItemLongClickListener implements ListView.OnItemLongClickListener {
+		@Override
+		public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
+			if (view.getTag().equals(true)) {
+				AlertDialog.Builder adb = new AlertDialog.Builder(MainActivity.this);
+				adb.setTitle("Delete User?");
+				adb.setMessage("Are you sure you want to remove\n" + mUserNamesToShow.get(position));
+				adb.setPositiveButton("Yes", new AlertDialog.OnClickListener() {
+					public void onClick(DialogInterface dialog, int which) {
+						mUserNamesToShow.remove(position);
+						((BaseAdapter) mAdapter).notifyDataSetChanged();
+						savePreferences();
+					}
+				});
+				adb.setNegativeButton("No", null);
+				adb.show();
+				return true;
+			} else {
+				return false;
+
+			}
 		}
 	}
 
@@ -251,4 +340,5 @@ public class MainActivity extends Activity {
 		// Pass any configuration change to the drawer toggls
 		mDrawerToggle.onConfigurationChanged(newConfig);
 	}
+
 }
