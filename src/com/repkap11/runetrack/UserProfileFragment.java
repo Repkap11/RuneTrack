@@ -1,5 +1,5 @@
 /**
- * PlanetFragment.java
+ * UserProfileFragment.java
  * $Id:$
  * $Log:$
  * @author Paul Repka psr2608
@@ -47,7 +47,6 @@ public class UserProfileFragment extends Fragment {
 		super.onDetach();
 	}
 
-	public static final String ARG_USERNAME = "arg_username";
 	private ListView mList;
 	private ResponseReceiver receiver;
 	public ArrayList<Parcelable> downloadResult;
@@ -76,17 +75,7 @@ public class UserProfileFragment extends Fragment {
 	}
 
 	private void failureRetryOnClick(View v) {
-		((MainActivity) this.getActivity()).selectItem(userName);
-		/*
-		 * Intent msgIntent = new Intent(this.getActivity(),
-		 * DownloadIntentService.class);
-		 * msgIntent.putExtra(DownloadIntentService.PARAM_USERNAME, userName);
-		 * this.getActivity().startService(msgIntent); IntentFilter filter = new
-		 * IntentFilter(DownloadIntentService.PARAM_USERNAME);
-		 * filter.addCategory(Intent.CATEGORY_DEFAULT); receiver = new
-		 * ResponseReceiver(); this.getActivity().registerReceiver(receiver,
-		 * filter); switcherFailure.setDisplayedChild(0);
-		 */
+		((MainActivity) this.getActivity()).selectUserProfileByName(userName);
 	}
 
 	@Override
@@ -98,6 +87,7 @@ public class UserProfileFragment extends Fragment {
 			switcherContent.setDisplayedChild(0);
 			Intent msgIntent = new Intent(this.getActivity(), DownloadIntentService.class);
 			msgIntent.putExtra(DownloadIntentService.PARAM_USERNAME, userName);
+			msgIntent.putExtra(DownloadIntentService.PARAM_WHICH_DATA, DownloadIntentService.PARAM_USER_PROFILE_TABLE);
 			this.getActivity().startService(msgIntent);
 			IntentFilter filter = new IntentFilter(DownloadIntentService.PARAM_USERNAME);
 			filter.addCategory(Intent.CATEGORY_DEFAULT);
@@ -136,7 +126,7 @@ public class UserProfileFragment extends Fragment {
 		});
 		switcherContent = (ViewSwitcher) rootView.findViewById(R.id.switcher_loading_content);
 		switcherFailure = (ViewSwitcher) rootView.findViewById(R.id.switcher_loading_failure);
-		userName = getArguments().getString(ARG_USERNAME);
+		userName = getArguments().getString(MainActivity.ARG_USERNAME);
 		mList = ((ListView) rootView.findViewById(R.id.content));
 		getActivity().setTitle(userName);
 		needsDownload = true;
@@ -159,7 +149,7 @@ public class UserProfileFragment extends Fragment {
 		public void onReceive(Context context, Intent intent) {
 			// Log.e("Paul", "before crash");
 			downloadResult = intent.getParcelableArrayListExtra(DownloadIntentService.PARAM_USERNAME);
-			if (downloadResult.size() == 0) {
+			if (downloadResult == null || downloadResult.size() == 0) {
 				switcherContent.setDisplayedChild(0);
 				switcherFailure.setDisplayedChild(1);
 				needsToShowDownloadFailure = true;

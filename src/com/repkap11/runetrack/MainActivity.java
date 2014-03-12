@@ -31,6 +31,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
@@ -40,6 +41,7 @@ import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
+import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
@@ -54,6 +56,9 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
+	public static final String ARG_USERNAME = "arg_username";
+	public static final String ARG_SKILL_NUMBER = "ARG_SKILL_NUMBER";
+	public static final String ARG_SKILL_NAME = "ARG_SKILL_NAME";
 	private DrawerLayout mDrawerLayout;
 	private ActionBarDrawerToggle mDrawerToggle;
 
@@ -62,6 +67,7 @@ public class MainActivity extends Activity {
 	private ArrayList<String> mUserNamesToShow;
 	private ListView mDrawerList;
 	private ListAdapter mAdapter;
+	public String mUserName;
 	private static final String USER_PROFILE_NAMES = "USER_PROFILE_NAMES";
 
 	@Override
@@ -137,12 +143,22 @@ public class MainActivity extends Activity {
 		};
 		mDrawerList.setAdapter(mAdapter);
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
-
+		
 		if (savedInstanceState == null) {
-			selectItem(mUserNamesToShow.get(0));
+			//selectUserProfileByName(mUserNamesToShow.get(0));
+			mUserName = mUserNamesToShow.get(0);
+			selectHitsoryGraph(mUserName, 0, "Overall");
+		} else{
+			//Fragment will take care of most of the state...
+			mUserName = savedInstanceState.getString(ARG_USERNAME);
+			
 		}
 	}
-
+	@Override
+	protected void onSaveInstanceState(Bundle outState) {
+		outState.putString(ARG_USERNAME, mUserName);
+		super.onSaveInstanceState(outState);
+	}
 	private void savePreferences() {
 		SharedPreferences prefs = this.getPreferences(MODE_PRIVATE);
 		Set<String> set = new HashSet<String>();
@@ -174,7 +190,7 @@ public class MainActivity extends Activity {
 			@Override
 			public boolean onQueryTextSubmit(String query) {
 				// Do something
-				selectItem(query);
+				selectUserProfileByName(query);
 				// search.clearFocus();
 				// search.setIconified(true);
 				menu.findItem(R.id.action_bar_search_user).collapseActionView();
@@ -221,6 +237,11 @@ public class MainActivity extends Activity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+		int result = item.getNumericShortcut() - 'a';
+		if (result != -97) {
+			selectHitsoryGraph(mUserName, result, (String) item.getTitle());
+		}
+
 		// The action bar home/up action should open or close the drawer.
 		// ActionBarDrawerToggle will take care of this.
 		if (mDrawerToggle.onOptionsItemSelected(item)) {
@@ -244,7 +265,7 @@ public class MainActivity extends Activity {
 		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
 			// view.findViewById(R.id.)
 			if (view.getTag().equals(true)) {
-				selectItem(mUserNamesToShow.get(position));
+				selectUserProfileByName(mUserNamesToShow.get(position));
 			} else {
 				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 				builder.setTitle("Enter Username");
@@ -260,7 +281,7 @@ public class MainActivity extends Activity {
 							mUserNamesToShow.add(userName);
 							((BaseAdapter) mAdapter).notifyDataSetChanged();
 							savePreferences();
-							selectItem(userName);
+							selectUserProfileByName(userName);
 						}
 					}
 				});
@@ -299,16 +320,34 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	void selectItem(String userName) {
+	void selectUserProfileByName(String userName) {
+		mUserName = userName;
 		// update the main content by replacing fragments
 		Fragment fragment = new UserProfileFragment();
 		Bundle args = new Bundle();
-
-		args.putString(UserProfileFragment.ARG_USERNAME, userName);
+		args.putString(ARG_USERNAME, userName);
 		fragment.setArguments(args);
 
 		FragmentManager fragmentManager = getFragmentManager();
-		fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+		fragmentManager.beginTransaction().replace(R.id.content_frame, fragment, "UserProfile").commit();
+
+		// update selected item and title, then close the drawer
+		// mDrawerList.setItemChecked(position, true);
+		setTitle(userName);
+		mDrawerLayout.closeDrawer(mDrawerList);
+	}
+
+	void selectHitsoryGraph(String userName, int skillNumber, String  skillName) {
+		// update the main content by replacing fragments
+		Fragment fragment = new HistoryGraphFragment();
+		Bundle args = new Bundle();
+		args.putString(ARG_USERNAME, userName);
+		args.putInt(ARG_SKILL_NUMBER, skillNumber);
+		args.putString(ARG_SKILL_NAME, skillName);
+		fragment.setArguments(args);
+
+		FragmentManager fragmentManager = getFragmentManager();
+		fragmentManager.beginTransaction().replace(R.id.content_frame, fragment, "HistoryGraph").commit();
 
 		// update selected item and title, then close the drawer
 		// mDrawerList.setItemChecked(position, true);
