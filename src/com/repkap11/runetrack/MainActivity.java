@@ -26,6 +26,7 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.SearchManager;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -33,15 +34,19 @@ import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.text.InputType;
+import android.util.AttributeSet;
 import android.util.Log;
+import android.view.InflateException;
+import android.view.LayoutInflater;
+import android.view.LayoutInflater.Factory;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MenuItem.OnMenuItemClickListener;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
@@ -143,22 +148,24 @@ public class MainActivity extends Activity {
 		};
 		mDrawerList.setAdapter(mAdapter);
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
-		
+
 		if (savedInstanceState == null) {
-			//selectUserProfileByName(mUserNamesToShow.get(0));
+			// selectUserProfileByName(mUserNamesToShow.get(0));
 			mUserName = mUserNamesToShow.get(0);
 			selectHitsoryGraph(mUserName, 0, "Overall");
-		} else{
-			//Fragment will take care of most of the state...
+		} else {
+			// Fragment will take care of most of the state...
 			mUserName = savedInstanceState.getString(ARG_USERNAME);
-			
+
 		}
 	}
+
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
 		outState.putString(ARG_USERNAME, mUserName);
 		super.onSaveInstanceState(outState);
 	}
+
 	private void savePreferences() {
 		SharedPreferences prefs = this.getPreferences(MODE_PRIVATE);
 		Set<String> set = new HashSet<String>();
@@ -167,12 +174,10 @@ public class MainActivity extends Activity {
 		editor.putStringSet(USER_PROFILE_NAMES, set);
 		editor.apply();
 	}
-
 	@Override
 	public boolean onCreateOptionsMenu(final Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main, menu);
-
 		final SearchView search = (SearchView) menu.findItem(R.id.action_bar_search_user).getActionView();
 		// getCurrentFocus().clearFocus();
 		// search.clearFocus();
@@ -337,7 +342,7 @@ public class MainActivity extends Activity {
 		mDrawerLayout.closeDrawer(mDrawerList);
 	}
 
-	void selectHitsoryGraph(String userName, int skillNumber, String  skillName) {
+	void selectHitsoryGraph(String userName, int skillNumber, String skillName) {
 		// update the main content by replacing fragments
 		Fragment fragment = new HistoryGraphFragment();
 		Bundle args = new Bundle();
@@ -379,5 +384,4 @@ public class MainActivity extends Activity {
 		// Pass any configuration change to the drawer toggls
 		mDrawerToggle.onConfigurationChanged(newConfig);
 	}
-
 }

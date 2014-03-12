@@ -6,7 +6,7 @@
  */
 package com.repkap11.runetrack;
 
-import java.util.ArrayList;
+import java.text.NumberFormat;
 
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
@@ -23,13 +23,14 @@ import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
+import com.jjoe64.graphview.CustomLabelFormatter;
 import com.jjoe64.graphview.GraphView;
 import com.jjoe64.graphview.GraphView.GraphViewData;
 import com.jjoe64.graphview.GraphViewDataInterface;
 import com.jjoe64.graphview.GraphViewSeries;
+import com.jjoe64.graphview.GraphViewSeries.GraphViewSeriesStyle;
 import com.jjoe64.graphview.LineGraphView;
 
 /**
@@ -46,6 +47,7 @@ public class HistoryGraphFragment extends Fragment {
 	private LinearLayout mGraphHolder;
 	private ResponseReceiver receiver;
 	public double[] downloadResult;
+	public String[] downloadResult2;
 	private boolean needsDownload = true;
 	private boolean needsToShowDownloadFailure = false;
 	private String userName;
@@ -73,7 +75,7 @@ public class HistoryGraphFragment extends Fragment {
 	}
 
 	private void failureRetryOnClick(View v) {
-		((MainActivity) this.getActivity()).selectHitsoryGraph(userName,skillNumber,skillName);
+		((MainActivity) this.getActivity()).selectHitsoryGraph(userName, skillNumber, skillName);
 	}
 
 	@Override
@@ -89,8 +91,7 @@ public class HistoryGraphFragment extends Fragment {
 			msgIntent.putExtra(DownloadIntentService.PARAM_WHICH_DATA, DownloadIntentService.PARAM_HISTORY_GRAPH);
 			this.getActivity().startService(msgIntent);
 			IntentFilter filter = new IntentFilter(DownloadIntentService.PARAM_USERNAME);
-			
-			
+
 			filter.addCategory(Intent.CATEGORY_DEFAULT);
 			receiver = new ResponseReceiver();
 			getActivity().registerReceiver(receiver, filter);
@@ -111,6 +112,7 @@ public class HistoryGraphFragment extends Fragment {
 		super.onSaveInstanceState(outState);
 		if (downloadResult != null) {
 			outState.putDoubleArray(DownloadIntentService.PARAM_USERNAME, downloadResult);
+			outState.putStringArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE, downloadResult2);
 			outState.putBoolean("needsToShowDownloadFailure", needsToShowDownloadFailure);
 		}
 	}
@@ -140,9 +142,10 @@ public class HistoryGraphFragment extends Fragment {
 			needsToShowDownloadFailure = savedInstanceState.getBoolean("needsToShowDownloadFailure");
 			Log.e("Paul", "needsToShowDownloadFailure updated from state : " + needsToShowDownloadFailure);
 			downloadResult = savedInstanceState.getDoubleArray(DownloadIntentService.PARAM_USERNAME);
+			downloadResult2 = savedInstanceState.getStringArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE);
 			if (downloadResult != null) {
 				needsDownload = false;
-				applyDownloadResult(downloadResult);
+				applyDownloadResult(downloadResult, downloadResult2);
 			}
 		}
 		return rootView;
@@ -153,19 +156,21 @@ public class HistoryGraphFragment extends Fragment {
 		public void onReceive(Context context, Intent intent) {
 			// Log.e("Paul", "before crash");
 			downloadResult = intent.getDoubleArrayExtra(DownloadIntentService.PARAM_USER_PROFILE_TABLE);
+			downloadResult2 = intent.getStringArrayExtra(DownloadIntentService.PARAM_USER_PROFILE_TABLE2);
 			if (downloadResult == null || downloadResult.length == 0) {
 				switcherContent.setDisplayedChild(0);
 				switcherFailure.setDisplayedChild(1);
 				needsToShowDownloadFailure = true;
-				Toast.makeText(HistoryGraphFragment.this.getActivity(), "Failure", Toast.LENGTH_SHORT).show();
+				// Toast.makeText(HistoryGraphFragment.this.getActivity(),
+				// "Failure", Toast.LENGTH_SHORT).show();
 			} else {
 				switcherContent.setDisplayedChild(1);
-				applyDownloadResult(downloadResult);
+				applyDownloadResult(downloadResult, downloadResult2);
 			}
 		}
 	}
 
-	public void applyDownloadResult(double[] result) {
+	public void applyDownloadResult(final double[] result, final String[] result2) {
 		if (result == null) {
 			Log.e("Paul", "Result Null");
 		} else if (this.getActivity() == null) {
@@ -173,22 +178,47 @@ public class HistoryGraphFragment extends Fragment {
 		} else {
 			Log.e("Paul", "All good, neither null");
 		}
-		GraphView graphView = new LineGraphView(this.getActivity(), skillName);
+		final GraphView graphView = new LineGraphView(this.getActivity(), skillName);
 		graphView.getGraphViewStyle().setGridColor(Color.WHITE);
 		graphView.getGraphViewStyle().setHorizontalLabelsColor(Color.BLACK);
 		graphView.getGraphViewStyle().setVerticalLabelsColor(Color.BLACK);
-		graphView.getGraphViewStyle().setVerticalLabelsAlign(Align.CENTER);
-		float scale = getResources().getDisplayMetrics().density;
-		int dpAsPixels = (int) (5 * scale + 0.5f);
+		graphView.getGraphViewStyle().setVerticalLabelsAlign(Align.RIGHT);
+		graphView.getGraphViewStyle().setTextSize(dpToPixals(10));
+		graphView.setCustomLabelFormatter(new CustomLabelFormatter() {
+			@Override
+			public String formatLabel(double value, boolean isXValue) {
+				int index = (int) Math.round(value);
+				if (index >= result.length) {
+					index = result.length - 1;
+				}
+				if (isXValue) {
+					return result2[index];
+
+				} else {
+					NumberFormat formatter = NumberFormat.getNumberInstance();
+					formatter.setMaximumFractionDigits(0);
+					return formatter.format(value);
+				}
+			}
+		});
+		int dpAsPixels = dpToPixals(4);
+		graphView.setScalable(true);
 		graphView.setPadding(dpAsPixels, dpAsPixels, dpAsPixels, dpAsPixels);
 
 		GraphViewDataInterface[] points = new GraphViewDataInterface[downloadResult.length];
 		for (int i = 0; i < downloadResult.length; i++) {
 			points[i] = new GraphViewData(i, downloadResult[i]);
 		}
-		graphView.addSeries(new GraphViewSeries(points));
+		graphView.addSeries(new GraphViewSeries(skillName,
+				new GraphViewSeriesStyle(getResources().getColor(R.color.green_text_color), dpToPixals(1)), points));
 		mGraphHolder.addView(graphView);
 
+	}
+
+	private int dpToPixals(int dp) {
+		float scale = getResources().getDisplayMetrics().density;
+		int dpAsPixels = (int) (dp * scale + 0.5f);
+		return dpAsPixels;
 	}
 
 }

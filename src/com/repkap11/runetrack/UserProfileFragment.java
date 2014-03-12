@@ -33,7 +33,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
 /**
@@ -153,7 +152,7 @@ public class UserProfileFragment extends Fragment {
 				switcherContent.setDisplayedChild(0);
 				switcherFailure.setDisplayedChild(1);
 				needsToShowDownloadFailure = true;
-				Toast.makeText(UserProfileFragment.this.getActivity(), "Failure", Toast.LENGTH_SHORT).show();
+				//Toast.makeText(UserProfileFragment.this.getActivity(), "Failure", Toast.LENGTH_SHORT).show();
 			} else {
 				UserProfileSkill topHeader = new UserProfileSkill("", "Curnt ", "Runescape", "Stats", "Today", "", "This", "Week");
 				UserProfileSkill header = new UserProfileSkill("", "Level", "Xp", "Rank", "Lvls", "Xp", "Lvls", "Xp");

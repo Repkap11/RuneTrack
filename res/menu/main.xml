@@ -91,7 +91,7 @@
                 android:numericShortcut="z"
                 android:title="Dungeoneering"/>
             <item
-                android:numericShortcut="["
+                android:numericShortcut="{"
                 android:title="Divination"/>
         </menu>
     </item>

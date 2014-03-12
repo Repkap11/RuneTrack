@@ -7,6 +7,14 @@
 
     <style name="MyActionBar" parent="@android:style/Widget.Holo.Light.ActionBar">
         <item name="android:background">@color/action_bar_top_color</item>
+        <item name="android:popupMenuStyle">@style/MyApp.PopupMenu</item>
     </style>
 
+     <!-- The beef: background color for Action Bar overflow menu -->
+    <style name="MyApp.PopupMenu" parent="android:Widget.Holo.Light.ListPopupWindow">
+        <item name="android:popupBackground">@drawable/menu_dropdown_panel</item>
+    </style>
+
+
+    
 </resources>

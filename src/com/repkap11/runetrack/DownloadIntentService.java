@@ -18,15 +18,9 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
-import com.jjoe64.graphview.GraphView.GraphViewData;
-import com.jjoe64.graphview.GraphViewSeries;
-
 import android.app.IntentService;
 import android.content.Intent;
-import android.graphics.Color;
-import android.os.Parcelable;
 import android.util.Log;
-import android.util.Pair;
 
 /**
  * @author paul
@@ -39,6 +33,8 @@ public class DownloadIntentService extends IntentService {
 	public static final String PARAM_USER_PROFILE_TABLE = "PARAM_USER_PROFILE_TABLE";
 	public static final String PARAM_HISTORY_GRAPH = "PARAM_HISTORY_GRAPH";
 	public static final String PARAM_WHICH_DATA = "PARAM_WHICH_DATA";
+	public static final String PARAM_USER_PROFILE_TABLE2 = "PARAM_USER_PROFILE_TABLE2";
+	private static final int TIMEOUT = 5*1000;
 
 	/**
 	 * @param name
@@ -65,22 +61,22 @@ public class DownloadIntentService extends IntentService {
 	 */
 	private void doHistoryGraph(Intent intent) {
 		double[] points;
+		String[] labels;
 		String userName = intent.getStringExtra(PARAM_USERNAME);
 		int skillNumber = intent.getIntExtra(PARAM_SKILL_NUMBER, 0);
-		ArrayList<UserProfileSkill> skills = new ArrayList<UserProfileSkill>();
 		try {
 			userName = URLEncoder.encode(userName, Charset.defaultCharset().name());
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
 		}
-		Log.e("Paul", "Downloading graph" + userName);
+		Log.e("Paul", "Downloading graph" + userName +":"+skillNumber);
 		try {
-			Connection c = Jsoup.connect("http://runetrack.com/includes/progress_chart.php?user=" + userName + "@"+skillNumber);
+			Connection c = Jsoup.connect("http://runetrack.com/includes/progress_chart.php?user=" + userName + "@" + skillNumber);
+			c.timeout(TIMEOUT);
 			Document d = c.get();
 			Element e = d.body();
 			Log.e("Paul", "Downloading done " + userName);
 			String xpString = e.text();
-			String datesString = e.textNodes().get(1).getWholeText();
 
 			JSONObject mainObject = new JSONObject(xpString);
 
@@ -90,13 +86,16 @@ public class DownloadIntentService extends IntentService {
 			// elementsArray.getJSONObject(0).getJSONArray("values");
 			String webText = datesValues.length() + ":" + xpValues.length();
 			points = new double[xpValues.length()];
+			labels = new String[datesValues.length()];
 			for (int i = 0; i < xpValues.length(); i++) {
-				points[i]  = xpValues.getDouble(i);
+				points[i] = xpValues.getDouble(i);
+				labels[i] =  datesValues.getString(i);
 			}
 
 			Log.e("Paul", "Web Text:" + webText);
 		} catch (Exception e) {
 			points = null;
+			labels = null;
 			e.printStackTrace();
 			Log.e("Paul", "Caught exception downloading, graph is empty");
 
@@ -105,6 +104,7 @@ public class DownloadIntentService extends IntentService {
 		broadcastIntent.setAction(PARAM_USERNAME);
 		broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
 		broadcastIntent.putExtra(PARAM_USER_PROFILE_TABLE, points);
+		broadcastIntent.putExtra(PARAM_USER_PROFILE_TABLE2, labels);
 		sendBroadcast(broadcastIntent);
 	}
 
