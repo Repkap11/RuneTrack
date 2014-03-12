@@ -3,7 +3,7 @@
     android:id="@+id/skill_text"
     android:layout_width="wrap_content"
     android:layout_height="fill_parent"
-    android:maxLines="1"
-    android:textColor="#000000"
     android:contentDescription="Temp Text"
+    android:maxLines="1"
+    android:textColor="@color/dark_text_color"
     android:typeface="monospace" />

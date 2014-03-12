@@ -68,6 +68,8 @@ public class DownloadIntentService extends IntentService {
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
+			Log.e("Paul","Caught exception downloading, settings skills to empty");
+			skills = new ArrayList<UserProfileSkill>();
 		}
 		Intent broadcastIntent = new Intent();
 		broadcastIntent.setAction(PARAM_USERNAME);

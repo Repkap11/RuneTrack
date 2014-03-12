@@ -44,42 +44,8 @@ import android.widget.Toast;
 import android.graphics.Color;
 import android.graphics.drawable.*;
 
-/**
- * This example illustrates a common usage of the DrawerLayout widget in the
- * Android support library.
- * <p/>
- * <p>
- * When a navigation (left) drawer is present, the host activity should detect
- * presses of the action bar's Up affordance as a signal to open and close the
- * navigation drawer. The ActionBarDrawerToggle facilitates this behavior. Items
- * within the drawer should fall into one of two categories:
- * </p>
- * <p/>
- * <ul>
- * <li><strong>View switches</strong>. A view switch follows the same basic
- * policies as list or tab navigation in that a view switch does not create
- * navigation history. This pattern should only be used at the root activity of
- * a task, leaving some form of Up navigation active for activities further down
- * the navigation hierarchy.</li>
- * <li><strong>Selective Up</strong>. The drawer allows the user to choose an
- * alternate parent for Up navigation. This allows a user to jump across an
- * app's navigation hierarchy at will. The application should treat this as it
- * treats Up navigation from a different task, replacing the current task stack
- * using TaskStackBuilder or similar. This is the only form of navigation drawer
- * that should be used outside of the root activity of a task.</li>
- * </ul>
- * <p/>
- * <p>
- * Right side drawers should be used for actions, not navigation. This follows
- * the pattern established by the Action Bar that navigation should be to the
- * left and actions to the right. An action should be an operation performed on
- * the current contents of the window, for example enabling or disabling a data
- * overlay on top of the current content.
- * </p>
- */
 public class MainActivity extends Activity {
 	private DrawerLayout mDrawerLayout;
-	//private View mDrawerContainer;
 	private ActionBarDrawerToggle mDrawerToggle;
 
 	private CharSequence mDrawerTitle;
@@ -91,11 +57,11 @@ public class MainActivity extends Activity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		setContentView(R.layout.drawer_layout);
-		
+
 		mTitle = mDrawerTitle = getTitle();
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
 		mDrawerList = (ListView) findViewById(R.id.left_drawer);
-		mUserNamesToShow = new String[] { "Repkap11", "Za phod", "Great One", "Zezima", "Repkam09","S U O M I","Jake","Drumgun","Alkan"};
+		mUserNamesToShow = new String[] { "Repkap11", "Za phod", "Great One", "Zezima", "Repkam09", "S U O M I", "Jake", "Drumgun", "Alkan" };
 		// set a custom shadow that overlays the main content when the drawer
 		// opens
 		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
@@ -110,13 +76,8 @@ public class MainActivity extends Activity {
 			}
 		});
 		mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
-		
-		// enable ActionBar app icon to behave as action to toggle nav drawer
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
-		getActionBar().setBackgroundDrawable(new ColorDrawable(Color.parseColor("#008b3b")));
-		// ActionBarDrawerToggle ties together the the proper interactions
-		// between the sliding drawer and the action bar app icon
 		mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
 		mDrawerLayout, /* DrawerLayout object */
 		R.drawable.ic_drawer, /* nav drawer image to replace 'Up' caret */
@@ -131,12 +92,13 @@ public class MainActivity extends Activity {
 
 			public void onDrawerOpened(View drawerView) {
 				getActionBar().setTitle(mDrawerTitle);
-				
+
 				invalidateOptionsMenu(); // creates call to
 											// onPrepareOptionsMenu()
 			}
-			public void onDrawerStateChanged(int newState){
-				if (newState == DrawerLayout.STATE_DRAGGING){
+
+			public void onDrawerStateChanged(int newState) {
+				if (newState == DrawerLayout.STATE_DRAGGING) {
 					invalidateOptionsMenu();
 				}
 			}
@@ -152,58 +114,57 @@ public class MainActivity extends Activity {
 	public boolean onCreateOptionsMenu(final Menu menu) {
 		MenuInflater inflater = getMenuInflater();
 		inflater.inflate(R.menu.main, menu);
-		
-		
+
 		final SearchView search = (SearchView) menu.findItem(R.id.action_bar_search_user).getActionView();
-		//getCurrentFocus().clearFocus();
-		//search.clearFocus();
-		//search.setFocusable(true);
-		//search.setIconified(false);
-		//search.requestFocusFromTouch();
+		// getCurrentFocus().clearFocus();
+		// search.clearFocus();
+		// search.setFocusable(true);
+		// search.setIconified(false);
+		// search.requestFocusFromTouch();
 		search.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-		if (search == null){
-			Log.e("Paul","Search is null");
+		if (search == null) {
+			Log.e("Paul", "Search is null");
 		}
 		final SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
-		    @Override
-		    public boolean onQueryTextChange(String newText) {
-		        // Do something
-		        return true;
-		    }
+			@Override
+			public boolean onQueryTextChange(String newText) {
+				// Do something
+				return true;
+			}
 
-		    @Override
-		    public boolean onQueryTextSubmit(String query) {
-		        // Do something
-		    	selectItem(query);
-		    	//search.clearFocus();
-				//search.setIconified(true);
-		    	menu.findItem(R.id.action_bar_search_user).collapseActionView();
-		    	
-		        return true;
-		    }
+			@Override
+			public boolean onQueryTextSubmit(String query) {
+				// Do something
+				selectItem(query);
+				// search.clearFocus();
+				// search.setIconified(true);
+				menu.findItem(R.id.action_bar_search_user).collapseActionView();
+
+				return true;
+			}
 		};
 		OnClickListener clickListener = new OnClickListener() {
 			@Override
 			public void onClick(View v) {
-				Log.e("TAG","Clicked");
+				Log.e("TAG", "Clicked");
 				menu.findItem(R.id.action_bar_search_user).collapseActionView();
-				
+
 			}
 		};
-		OnFocusChangeListener focus =  new OnFocusChangeListener() {
+		OnFocusChangeListener focus = new OnFocusChangeListener() {
 			@Override
 			public void onFocusChange(View v, boolean hasFocus) {
-				Log.e("Paul","Focus Changed");
-				if (!hasFocus){
+				Log.e("Paul", "Focus Changed");
+				if (!hasFocus) {
 					menu.findItem(R.id.action_bar_search_user).collapseActionView();
 				}
 				// TODO Auto-generated method stub
-				
+
 			}
 		};
 		search.setOnQueryTextListener(queryTextListener);
 		search.setOnQueryTextFocusChangeListener(focus);
-		
+
 		return super.onCreateOptionsMenu(menu);
 	}
 
@@ -216,8 +177,8 @@ public class MainActivity extends Activity {
 		MenuItem searchItem = menu.findItem(R.id.action_bar_search_user);
 		searchItem.setVisible(!drawerOpen);
 		searchItem.collapseActionView();
-		//search.clearFocus();
-		//search.setIconified(false);
+		// search.clearFocus();
+		// search.setIconified(false);
 		return super.onPrepareOptionsMenu(menu);
 	}
 
@@ -234,13 +195,6 @@ public class MainActivity extends Activity {
 			// create intent to perform web search for this planet
 			Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
 			intent.putExtra(SearchManager.QUERY, getActionBar().getTitle());
-			// catch event that there's no activity to handle intent
-			//selectItem();
-			//if (intent.resolveActivity(getPackageManager()) != null) {
-				//tartActivity(intent);
-			//} else {
-			//	Toast.makeText(this, R.string.app_not_available, Toast.LENGTH_LONG).show();
-			//}
 			return true;
 		default:
 			return super.onOptionsItemSelected(item);
@@ -256,7 +210,7 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	private void selectItem(String userName) {
+	void selectItem(String userName) {
 		// update the main content by replacing fragments
 		Fragment fragment = new UserProfileFragment();
 		Bundle args = new Bundle();
@@ -268,7 +222,7 @@ public class MainActivity extends Activity {
 		fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
 
 		// update selected item and title, then close the drawer
-		//mDrawerList.setItemChecked(position, true);
+		// mDrawerList.setItemChecked(position, true);
 		setTitle(userName);
 		mDrawerLayout.closeDrawer(mDrawerList);
 	}

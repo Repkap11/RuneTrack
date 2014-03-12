@@ -27,26 +27,33 @@ import android.util.TypedValue;
 import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
-import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.*;
 
 /**
  * Fragment that appears in the "content_frame", shows a planet
  */
 public class UserProfileFragment extends Fragment {
+
+	@Override
+	public void onDetach() {
+		Log.e("Paul", "Fragment Detached");
+		super.onDetach();
+	}
+
 	public static final String ARG_USERNAME = "arg_username";
 	private ListView mList;
 	private ResponseReceiver receiver;
 	public ArrayList<Parcelable> downloadResult;
 	private boolean needsDownload = true;
+	private boolean needsToShowDownloadFailure = false;
 	private String userName;
-	ViewSwitcher switcher;
+	private ViewSwitcher switcherFailure;
+	private ViewSwitcher switcherContent;
+	private TextView failureRetryButton;
 
 	public UserProfileFragment() {
 		// Empty constructor required for fragment subclasses
@@ -65,10 +72,27 @@ public class UserProfileFragment extends Fragment {
 		}
 	}
 
+	private void failureRetryOnClick(View v) {
+		((MainActivity) this.getActivity()).selectItem(userName);
+		/*
+		 * Intent msgIntent = new Intent(this.getActivity(),
+		 * DownloadIntentService.class);
+		 * msgIntent.putExtra(DownloadIntentService.PARAM_USERNAME, userName);
+		 * this.getActivity().startService(msgIntent); IntentFilter filter = new
+		 * IntentFilter(DownloadIntentService.PARAM_USERNAME);
+		 * filter.addCategory(Intent.CATEGORY_DEFAULT); receiver = new
+		 * ResponseReceiver(); this.getActivity().registerReceiver(receiver,
+		 * filter); switcherFailure.setDisplayedChild(0);
+		 */
+	}
+
 	@Override
 	public void onResume() {
 		super.onResume();
+		Log.e("Paul", "onResume needsDownloadFailure " + needsToShowDownloadFailure);
+		Log.e("Paul", "onResume needsDownload " + needsDownload);
 		if (needsDownload) {
+			switcherContent.setDisplayedChild(0);
 			Intent msgIntent = new Intent(this.getActivity(), DownloadIntentService.class);
 			msgIntent.putExtra(DownloadIntentService.PARAM_USERNAME, userName);
 			this.getActivity().startService(msgIntent);
@@ -77,6 +101,14 @@ public class UserProfileFragment extends Fragment {
 			receiver = new ResponseReceiver();
 			getActivity().registerReceiver(receiver, filter);
 
+		} else {
+
+			if (needsToShowDownloadFailure) {
+				switcherContent.setDisplayedChild(0);
+				switcherFailure.setDisplayedChild(1);
+			} else {
+				switcherContent.setDisplayedChild(1);
+			}
 		}
 	}
 
@@ -85,18 +117,31 @@ public class UserProfileFragment extends Fragment {
 		super.onSaveInstanceState(outState);
 		if (downloadResult != null) {
 			outState.putParcelableArrayList(DownloadIntentService.PARAM_USERNAME, downloadResult);
+			outState.putBoolean("needsToShowDownloadFailure", needsToShowDownloadFailure);
 		}
 	}
 
 	@Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 		View rootView = inflater.inflate(R.layout.user_profile, container, false);
-		switcher = (ViewSwitcher)rootView.findViewById(R.id.switcher);
+		failureRetryButton = (TextView) rootView.findViewById(R.id.user_profile_error_message);
+		failureRetryButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				failureRetryOnClick(v);
+			}
+		});
+		switcherContent = (ViewSwitcher) rootView.findViewById(R.id.switcher_loading_content);
+		switcherFailure = (ViewSwitcher) rootView.findViewById(R.id.switcher_loading_failure);
 		userName = getArguments().getString(ARG_USERNAME);
 		mList = ((ListView) rootView.findViewById(R.id.content));
 		getActivity().setTitle(userName);
 		needsDownload = true;
+
 		if (savedInstanceState != null) {
+
+			needsToShowDownloadFailure = savedInstanceState.getBoolean("needsToShowDownloadFailure");
+			Log.e("Paul", "needsToShowDownloadFailure updated from state : " + needsToShowDownloadFailure);
 			downloadResult = savedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_USERNAME);
 			if (downloadResult != null) {
 				needsDownload = false;
@@ -111,20 +156,30 @@ public class UserProfileFragment extends Fragment {
 		public void onReceive(Context context, Intent intent) {
 			// Log.e("Paul", "before crash");
 			downloadResult = intent.getParcelableArrayListExtra(DownloadIntentService.PARAM_USERNAME);
-			if (downloadResult.size() == 0){
-				Toast.makeText(UserProfileFragment.this.getActivity(),"Failure", Toast.LENGTH_SHORT).show();
-			} else{
-			UserProfileSkill topHeader = new UserProfileSkill("", "Curnt ", "Runescape", "Stats", "Today", "", "This", "Week");
-			UserProfileSkill header = new UserProfileSkill("", "Level", "Xp", "Rank", "Lvls", "Xp", "Lvls", "Xp");
-			downloadResult.add(0, topHeader);
-			downloadResult.add(1, header);
-			applyDownloadResult(downloadResult);
+			if (downloadResult.size() == 0) {
+				switcherContent.setDisplayedChild(0);
+				switcherFailure.setDisplayedChild(1);
+				needsToShowDownloadFailure = true;
+				Toast.makeText(UserProfileFragment.this.getActivity(), "Failure", Toast.LENGTH_SHORT).show();
+			} else {
+				UserProfileSkill topHeader = new UserProfileSkill("", "Curnt ", "Runescape", "Stats", "Today", "", "This", "Week");
+				UserProfileSkill header = new UserProfileSkill("", "Level", "Xp", "Rank", "Lvls", "Xp", "Lvls", "Xp");
+				downloadResult.add(0, topHeader);
+				downloadResult.add(1, header);
+				switcherContent.setDisplayedChild(1);
+				applyDownloadResult(downloadResult);
 			}
 		}
 	}
 
 	public void applyDownloadResult(ArrayList<Parcelable> result) {
-		switcher.showNext();
+		if (result == null) {
+			Log.e("Paul", "Result Null");
+		} else if (this.getActivity() == null) {
+			Log.e("Paul", "Activity is Null");
+		} else {
+			Log.e("Paul", "All good, neither null");
+		}
 		mList.setAdapter(new ArrayAdapter<Parcelable>(this.getActivity(), R.layout.user_profile_holder, result) {
 			private UserProfileBounds bounds;
 
@@ -151,9 +206,9 @@ public class UserProfileFragment extends Fragment {
 							getResources().getIdentifier(((UserProfileSkill) this.getItem(position)).skillName.toLowerCase(Locale.getDefault()),
 									"drawable", getActivity().getPackageName()));
 					skillIcon.setImageDrawable(imageIcon);
-				} else{
+				} else {
 					skillIcon.setImageResource(android.R.color.transparent);
-					
+
 				}
 
 				View holderOfStrings = returnView.findViewById(R.id.text_lin_layout);
@@ -195,9 +250,10 @@ public class UserProfileFragment extends Fragment {
 					skillName.setWidth(dim);
 					if (m >= 3) {
 						if (position > 1 && !skill.get(m).equals("0") && !skill.get(m).equals("?"))
-							skillName.setTextColor(Color.parseColor("#00AA00"));
+
+							skillName.setTextColor(getResources().getColor(R.color.green_text_color));
 						else
-							skillName.setTextColor(Color.BLACK);
+							skillName.setTextColor(getResources().getColor(R.color.dark_text_color));
 					}
 				}
 				return returnView;
@@ -255,4 +311,5 @@ public class UserProfileFragment extends Fragment {
 
 		});
 	}
+
 }
