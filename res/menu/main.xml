@@ -10,6 +10,7 @@
     <item
         android:id="@+id/action_bar_choose_skill"
         android:icon="@drawable/overall"
+         android:title="@string/choose_a_skill"
         android:showAsAction="ifRoom">
         <menu android:id="@+id/newid" >
             <item

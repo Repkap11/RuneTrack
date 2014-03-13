@@ -150,9 +150,9 @@ public class MainActivity extends Activity {
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 
 		if (savedInstanceState == null) {
-			// selectUserProfileByName(mUserNamesToShow.get(0));
 			mUserName = mUserNamesToShow.get(0);
-			selectHitsoryGraph(mUserName, 0, "Overall");
+			selectUserProfileByName(mUserNamesToShow.get(0));
+			//selectHitsoryGraph(mUserName, 0, "Overall");
 		} else {
 			// Fragment will take care of most of the state...
 			mUserName = savedInstanceState.getString(ARG_USERNAME);

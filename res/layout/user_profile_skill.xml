@@ -3,19 +3,19 @@
     android:id="@+id/text_lin_layout"
     android:layout_width="fill_parent"
     android:layout_height="wrap_content"
-    android:layout_centerVertical="true">
+    android:layout_centerVertical="true" >
 
     <ImageView
         android:id="@+id/skill_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/text1"
-        android:layout_alignLeft="@+id/text1"
         android:layout_alignParentLeft="true"
+        android:layout_toLeftOf="@id/text1"
+        android:scaleType="centerInside"
         android:layout_alignTop="@+id/text1"
-        android:layout_centerHorizontal="true"
         android:layout_centerVertical="true"
-        android:paddingLeft="3dip" />
+        android:padding="1dp" />
 
     <RelativeLayout
         android:id="@id/text1"

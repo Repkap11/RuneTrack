@@ -80,8 +80,8 @@ public class UserProfileFragment extends Fragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		Log.e("Paul", "onResume needsDownloadFailure " + needsToShowDownloadFailure);
-		Log.e("Paul", "onResume needsDownload " + needsDownload);
+		//Log.e("Paul", "onResume needsDownloadFailure " + needsToShowDownloadFailure);
+		//Log.e("Paul", "onResume needsDownload " + needsDownload);
 		if (needsDownload) {
 			switcherContent.setDisplayedChild(0);
 			Intent msgIntent = new Intent(this.getActivity(), DownloadIntentService.class);
@@ -152,7 +152,8 @@ public class UserProfileFragment extends Fragment {
 				switcherContent.setDisplayedChild(0);
 				switcherFailure.setDisplayedChild(1);
 				needsToShowDownloadFailure = true;
-				//Toast.makeText(UserProfileFragment.this.getActivity(), "Failure", Toast.LENGTH_SHORT).show();
+				// Toast.makeText(UserProfileFragment.this.getActivity(),
+				// "Failure", Toast.LENGTH_SHORT).show();
 			} else {
 				UserProfileSkill topHeader = new UserProfileSkill("", "Curnt ", "Runescape", "Stats", "Today", "", "This", "Week");
 				UserProfileSkill header = new UserProfileSkill("", "Level", "Xp", "Rank", "Lvls", "Xp", "Lvls", "Xp");
@@ -188,9 +189,9 @@ public class UserProfileFragment extends Fragment {
 					LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 					returnView = inflater.inflate(R.layout.user_profile_skill, mList, false);
 					skillIcon = (ImageView) returnView.findViewById(R.id.skill_image);
-					skillIcon.setAdjustViewBounds(true);
-					skillIcon.setMaxWidth(bounds.imageSize * DisplayMetrics.DENSITY_DEFAULT);
-					skillIcon.setMinimumWidth(bounds.imageSize * DisplayMetrics.DENSITY_DEFAULT);
+					//skillIcon.setAdjustViewBounds(true);
+					//skillIcon.setMaxWidth((int) (bounds.imageSize ));//* getResources().getDisplayMetrics().density)
+					//skillIcon.setMinimumWidth((int) (bounds.imageSize));
 				}
 				ArrayList<String> skill = ((UserProfileSkill) this.getItem(position)).mListOfItems;
 				if (!((UserProfileSkill) this.getItem(position)).skillName.equals("")) {
@@ -270,6 +271,7 @@ public class UserProfileFragment extends Fragment {
 					totals[i] = max + 1;// +1 for padding text with a space
 					total += max + 1;
 				}
+				//TODO calc image size
 				int imageSize = (int) ((width) / (total + 2) * 2);// image takes
 																	// two
 																	// spaces
@@ -304,4 +306,9 @@ public class UserProfileFragment extends Fragment {
 		});
 	}
 
+	private int dpToPixals(int dp) {
+		float scale = getResources().getDisplayMetrics().density;
+		int dpAsPixels = (int) (dp * scale + 0.5f);
+		return dpAsPixels;
+	}
 }

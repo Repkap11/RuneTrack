@@ -81,8 +81,8 @@ public class HistoryGraphFragment extends Fragment {
 	@Override
 	public void onResume() {
 		super.onResume();
-		Log.e("Paul", "onResume needsDownloadFailure " + needsToShowDownloadFailure);
-		Log.e("Paul", "onResume needsDownload " + needsDownload);
+		//Log.e("Paul", "onResume needsDownloadFailure " + needsToShowDownloadFailure);
+		//Log.e("Paul", "onResume needsDownload " + needsDownload);
 		if (needsDownload) {
 			switcherContent.setDisplayedChild(0);
 			Intent msgIntent = new Intent(this.getActivity(), DownloadIntentService.class);
@@ -171,6 +171,7 @@ public class HistoryGraphFragment extends Fragment {
 	}
 
 	public void applyDownloadResult(final double[] result, final String[] result2) {
+		/*
 		if (result == null) {
 			Log.e("Paul", "Result Null");
 		} else if (this.getActivity() == null) {
@@ -178,6 +179,7 @@ public class HistoryGraphFragment extends Fragment {
 		} else {
 			Log.e("Paul", "All good, neither null");
 		}
+		*/
 		final GraphView graphView = new LineGraphView(this.getActivity(), skillName);
 		graphView.getGraphViewStyle().setGridColor(Color.WHITE);
 		graphView.getGraphViewStyle().setHorizontalLabelsColor(Color.BLACK);

@@ -34,14 +34,13 @@ public class DownloadIntentService extends IntentService {
 	public static final String PARAM_HISTORY_GRAPH = "PARAM_HISTORY_GRAPH";
 	public static final String PARAM_WHICH_DATA = "PARAM_WHICH_DATA";
 	public static final String PARAM_USER_PROFILE_TABLE2 = "PARAM_USER_PROFILE_TABLE2";
-	private static final int TIMEOUT = 5*1000;
+	private static final int TIMEOUT = 5 * 1000;
 
 	/**
 	 * @param name
 	 */
 	public DownloadIntentService() {
 		super("UserNameInfoDownloader");
-		// TODO Auto-generated constructor stub
 	}
 
 	@Override
@@ -69,7 +68,7 @@ public class DownloadIntentService extends IntentService {
 		} catch (UnsupportedEncodingException e1) {
 			e1.printStackTrace();
 		}
-		Log.e("Paul", "Downloading graph" + userName +":"+skillNumber);
+		Log.e("Paul", "Downloading graph" + userName + ":" + skillNumber);
 		try {
 			Connection c = Jsoup.connect("http://runetrack.com/includes/progress_chart.php?user=" + userName + "@" + skillNumber);
 			c.timeout(TIMEOUT);
@@ -89,7 +88,7 @@ public class DownloadIntentService extends IntentService {
 			labels = new String[datesValues.length()];
 			for (int i = 0; i < xpValues.length(); i++) {
 				points[i] = xpValues.getDouble(i);
-				labels[i] =  datesValues.getString(i);
+				labels[i] = datesValues.getString(i);
 			}
 
 			Log.e("Paul", "Web Text:" + webText);
