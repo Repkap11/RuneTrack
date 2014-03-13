@@ -19,7 +19,11 @@ package com.repkap11.runetrack;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
+
+import org.json.JSONArray;
+import org.json.JSONException;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -32,18 +36,13 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
-import android.graphics.Color;
 import android.os.Bundle;
-import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.text.InputType;
-import android.util.AttributeSet;
 import android.util.Log;
-import android.view.InflateException;
-import android.view.LayoutInflater;
-import android.view.LayoutInflater.Factory;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -69,7 +68,7 @@ public class MainActivity extends Activity {
 
 	private CharSequence mDrawerTitle;
 	private CharSequence mTitle;
-	private ArrayList<String> mUserNamesToShow;
+	private List<String> mUserNamesToShow;
 	private ListView mDrawerList;
 	private ListAdapter mAdapter;
 	public String mUserName;
@@ -83,14 +82,12 @@ public class MainActivity extends Activity {
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
 		mDrawerList = (ListView) findViewById(R.id.left_drawer);
 		SharedPreferences prefs = this.getPreferences(MODE_PRIVATE);
-		Set<String> set = prefs.getStringSet(USER_PROFILE_NAMES, new HashSet<String>());
-		mUserNamesToShow = new ArrayList<String>();
-		if (set == null || set.isEmpty()) {
+
+		mUserNamesToShow = getStringArrayPref(prefs, USER_PROFILE_NAMES);
+		if (mUserNamesToShow.size() == 0) {
 			Log.e("Paul", "Not using saved values");
 			mUserNamesToShow = new ArrayList<String>(Arrays.asList(new String[] { "Repkap11", "Za phod", "Great One", "Zezima", "Repkam09",
 					"S U O M I", "Jake", "Drumgun", "Alkan" }));
-		} else {
-			mUserNamesToShow.addAll(set);
 		}
 		// set a custom shadow that overlays the main content when the drawer
 		// opens
@@ -152,7 +149,7 @@ public class MainActivity extends Activity {
 		if (savedInstanceState == null) {
 			mUserName = mUserNamesToShow.get(0);
 			selectUserProfileByName(mUserNamesToShow.get(0));
-			//selectHitsoryGraph(mUserName, 0, "Overall");
+			// selectHitsoryGraph(mUserName, 0, "Overall");
 		} else {
 			// Fragment will take care of most of the state...
 			mUserName = savedInstanceState.getString(ARG_USERNAME);
@@ -172,8 +169,39 @@ public class MainActivity extends Activity {
 		set.addAll(mUserNamesToShow);
 		Editor editor = prefs.edit();
 		editor.putStringSet(USER_PROFILE_NAMES, set);
+		setStringArrayPref(editor, USER_PROFILE_NAMES, mUserNamesToShow);
 		editor.apply();
 	}
+
+	public static void setStringArrayPref(Editor editor, String key, List<String> values) {
+		JSONArray a = new JSONArray();
+		for (int i = 0; i < values.size(); i++) {
+			a.put(values.get(i));
+		}
+		if (!values.isEmpty()) {
+			editor.putString(key, a.toString());
+		} else {
+			editor.putString(key, null);
+		}
+	}
+
+	public static ArrayList<String> getStringArrayPref(SharedPreferences prefs, String key) {
+		String json = prefs.getString(key, null);
+		ArrayList<String> urls = new ArrayList<String>();
+		if (json != null) {
+			try {
+				JSONArray a = new JSONArray(json);
+				for (int i = 0; i < a.length(); i++) {
+					String url = a.optString(i);
+					urls.add(url);
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
+		}
+		return urls;
+	}
+
 	@Override
 	public boolean onCreateOptionsMenu(final Menu menu) {
 		MenuInflater inflater = getMenuInflater();
@@ -282,12 +310,10 @@ public class MainActivity extends Activity {
 					@Override
 					public void onClick(DialogInterface dialog, int which) {
 						String userName = input.getText().toString();
-						if (!mUserNamesToShow.contains(userName)) {
-							mUserNamesToShow.add(userName);
-							((BaseAdapter) mAdapter).notifyDataSetChanged();
-							savePreferences();
-							selectUserProfileByName(userName);
-						}
+						mUserNamesToShow.add(userName);
+						((BaseAdapter) mAdapter).notifyDataSetChanged();
+						savePreferences();
+						selectUserProfileByName(userName);
 					}
 				});
 				builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
