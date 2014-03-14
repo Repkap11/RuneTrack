@@ -13,14 +13,16 @@
         android:orientation="horizontal" >
     </LinearLayout>
 
-    <ListView
+    <ExpandableListView
         android:id="@+id/left_drawer"
         android:layout_width="240dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/left_drawer_background_color"
         android:choiceMode="singleChoice"
-        android:divider="@android:color/transparent"
-        android:dividerHeight="0dp" />
+        android:childDivider="@color/left_drawer_sub_divider_color"
+        android:divider="@color/left_drawer_divider_color"
+        android:dividerHeight="1dp" >
+    </ExpandableListView>
 
 </android.support.v4.widget.DrawerLayout>

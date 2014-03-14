@@ -30,14 +30,12 @@ import android.app.AlertDialog;
 import android.app.Fragment;
 import android.app.FragmentManager;
 import android.app.SearchManager;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.res.Configuration;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
@@ -51,10 +49,13 @@ import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.BaseAdapter;
+import android.widget.BaseExpandableListAdapter;
 import android.widget.EditText;
-import android.widget.ListAdapter;
+import android.widget.ExpandableListAdapter;
+import android.widget.ExpandableListView;
+import android.widget.ExpandableListView.OnChildClickListener;
+import android.widget.ExpandableListView.OnGroupClickListener;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
@@ -69,8 +70,8 @@ public class MainActivity extends Activity {
 	private CharSequence mDrawerTitle;
 	private CharSequence mTitle;
 	private List<String> mUserNamesToShow;
-	private ListView mDrawerList;
-	private ListAdapter mAdapter;
+	private ExpandableListView mDrawerList;
+	private ExpandableListAdapter mAdapter;
 	public String mUserName;
 	private static final String USER_PROFILE_NAMES = "USER_PROFILE_NAMES";
 
@@ -80,7 +81,7 @@ public class MainActivity extends Activity {
 		setContentView(R.layout.drawer_layout);
 		mTitle = mDrawerTitle = getTitle();
 		mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
-		mDrawerList = (ListView) findViewById(R.id.left_drawer);
+		mDrawerList = (ExpandableListView) findViewById(R.id.left_drawer);
 		SharedPreferences prefs = this.getPreferences(MODE_PRIVATE);
 
 		mUserNamesToShow = getStringArrayPref(prefs, USER_PROFILE_NAMES);
@@ -93,36 +94,98 @@ public class MainActivity extends Activity {
 		// opens
 		mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
 		// set up the drawer's list view with items and click listener
-		mAdapter = new ArrayAdapter<String>(this, R.layout.drawer_list_item, mUserNamesToShow) {
+		mAdapter = new BaseExpandableListAdapter() {
+
 			@Override
-			public int getCount() {
-				return super.getCount() + 1;
+			public boolean isChildSelectable(int groupPosition, int childPosition) {
+				if (groupPosition == getGroupCount() - 1) {
+					return false;
+				} else {
+					return true;
+				}
 			}
 
 			@Override
-			public View getView(int position, View convertView, ViewGroup parent) {
+			public boolean hasStableIds() {
+				return true;
+			}
+
+			@Override
+			public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
 				// Log.e("Paul", "Getting view " + position);
 				TextView view = (TextView) getLayoutInflater().inflate(R.layout.drawer_list_item, parent, false);
-				if (position == getCount() - 1) {
+				if (groupPosition == getGroupCount() - 1) {
 					view.setText("Add New User");
 					view.setTag(false);// is user
 				} else {
-					view.setText(mUserNamesToShow.get(position));
+					view.setText(mUserNamesToShow.get(groupPosition));
 					view.setTag(true);// is user
 				}
 
 				return view;
 			}
+
+			@Override
+			public long getGroupId(int groupPosition) {
+				// TODO Auto-generated method stub
+				return 0;
+			}
+
+			@Override
+			public int getGroupCount() {
+				return mUserNamesToShow.size() + 1;
+			}
+
+			@Override
+			public Object getGroup(int groupPosition) {
+				// TODO Auto-generated method stub
+				return "New Group Data Position:" + groupPosition;
+			}
+
+			@Override
+			public int getChildrenCount(int groupPosition) {
+				if (groupPosition == getGroupCount() - 1) {
+					return 0;
+				} else {
+					return 2;
+				}
+			}
+
+			@Override
+			public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
+				// Log.e("Paul", "Getting view " + position);
+				TextView view = (TextView) convertView;
+				if (view == null) {
+					view = (TextView) getLayoutInflater().inflate(R.layout.drawer_list_sub_item, parent, false);
+				}
+				view = (TextView) getLayoutInflater().inflate(R.layout.drawer_list_sub_item, parent, false);
+				view.setText(childPosition == 0 ? "    User Profile":"    Weekly Xp Distribution");
+				return view;
+			}
+
+			@Override
+			public long getChildId(int groupPosition, int childPosition) {
+				return 0;
+			}
+
+			@Override
+			public Object getChild(int groupPosition, int childPosition) {
+				// TODO Auto-generated method stub
+				return null;
+			}
 		};
-		mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
-		mDrawerList.setOnItemLongClickListener(new DrawerItemLongClickListener());
+		mDrawerList.setOnChildClickListener(new DrawerChildClickListener());
+		mDrawerList.setOnItemLongClickListener(new DrawerGroupLongClickListener());
+		mDrawerList.setOnGroupClickListener(new DrawerGroupClickListener());
 		getActionBar().setDisplayHomeAsUpEnabled(true);
 		getActionBar().setHomeButtonEnabled(true);
-		mDrawerToggle = new ActionBarDrawerToggle(this, /* host Activity */
-		mDrawerLayout, /* DrawerLayout object */
-		R.drawable.ic_drawer, /* nav drawer image to replace 'Up' caret */
-		R.string.drawer_open, /* "open drawer" description for accessibility */
-		R.string.drawer_close /* "close drawer" description for accessibility */
+		mDrawerToggle = new ActionBarDrawerToggle(this, // host Activity
+				mDrawerLayout, // DrawerLayout object
+				R.drawable.ic_drawer, // nav drawer image to replace 'Up' caret
+				R.string.drawer_open, // / "open drawer" description for
+										// accessibility
+				R.string.drawer_close // "close drawer" description for
+										// accessibility
 		) {
 			public void onDrawerClosed(View view) {
 				getActionBar().setTitle(mTitle);
@@ -148,8 +211,9 @@ public class MainActivity extends Activity {
 
 		if (savedInstanceState == null) {
 			mUserName = mUserNamesToShow.get(0);
-			selectUserProfileByName(mUserNamesToShow.get(0));
+			selectUserProfileByName(mUserName);
 			// selectHitsoryGraph(mUserName, 0, "Overall");
+			selectPiChart(mUserName);
 		} else {
 			// Fragment will take care of most of the state...
 			mUserName = savedInstanceState.getString(ARG_USERNAME);
@@ -292,61 +356,85 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	/* The click listner for ListView in the navigation drawer */
-	private class DrawerItemClickListener implements ListView.OnItemClickListener {
+	private class DrawerGroupClickListener implements OnGroupClickListener {
 		@Override
-		public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-			// view.findViewById(R.id.)
-			if (view.getTag().equals(true)) {
-				selectUserProfileByName(mUserNamesToShow.get(position));
+		public boolean onGroupClick(ExpandableListView parent, View view, int groupPosition, long id) {
+			Log.e("Paul", "onGroupClick called");
+			if (view.getTag() != null) {
+				if (view.getTag().equals(true)) {
+					return false;
+				} else {
+					AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
+					builder.setTitle("Enter Username");
+					// Set up the input
+					final EditText input = new EditText(MainActivity.this);
+					input.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+					builder.setView(input);
+					builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							String userName = input.getText().toString();
+							mUserNamesToShow.add(userName);
+							((BaseAdapter) mAdapter).notifyDataSetChanged();
+							savePreferences();
+							selectUserProfileByName(userName);
+						}
+					});
+					builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							dialog.cancel();
+						}
+					});
+					builder.show();
+				}
+				return true;
 			} else {
-				AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
-				builder.setTitle("Enter Username");
-				// Set up the input
-				final EditText input = new EditText(MainActivity.this);
-				input.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-				builder.setView(input);
-				builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						String userName = input.getText().toString();
-						mUserNamesToShow.add(userName);
-						((BaseAdapter) mAdapter).notifyDataSetChanged();
-						savePreferences();
-						selectUserProfileByName(userName);
-					}
-				});
-				builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						dialog.cancel();
-					}
-				});
-				builder.show();
+				return false;
 			}
 		}
 	}
 
-	private class DrawerItemLongClickListener implements ListView.OnItemLongClickListener {
+	private class DrawerChildClickListener implements OnChildClickListener {
 		@Override
-		public boolean onItemLongClick(AdapterView<?> parent, View view, final int position, long id) {
-			if (view.getTag().equals(true)) {
-				AlertDialog.Builder adb = new AlertDialog.Builder(MainActivity.this);
-				adb.setTitle("Delete User?");
-				adb.setMessage("Are you sure you want to remove\n" + mUserNamesToShow.get(position));
-				adb.setPositiveButton("Yes", new AlertDialog.OnClickListener() {
-					public void onClick(DialogInterface dialog, int which) {
-						mUserNamesToShow.remove(position);
-						((BaseAdapter) mAdapter).notifyDataSetChanged();
-						savePreferences();
-					}
-				});
-				adb.setNegativeButton("No", null);
-				adb.show();
-				return true;
+		public boolean onChildClick(ExpandableListView parent, View view, int groupPosition, int childPosition, long id) {
+			Log.e("Paul", "onChildClick called:"+groupPosition+":"+childPosition);
+			if (childPosition == 0){
+				selectUserProfileByName(mUserNamesToShow.get(groupPosition));
+			}
+			if (childPosition == 1){
+				selectPiChart(mUserNamesToShow.get(groupPosition));
+			}
+			return true;
+
+		}
+	}
+
+	private class DrawerGroupLongClickListener implements ListView.OnItemLongClickListener {
+
+		@Override
+		public boolean onItemLongClick(AdapterView<?> arg0, View view, final int groupPosition, long dontknow) {
+			Log.e("Paul", "onGroupLongClick called");
+			if (view.getTag() != null) {
+				if (view.getTag().equals(true)) {
+					AlertDialog.Builder adb = new AlertDialog.Builder(MainActivity.this);
+					adb.setTitle("Delete User?");
+					adb.setMessage("Are you sure you want to remove\n" + mUserNamesToShow.get(groupPosition));
+					adb.setPositiveButton("Yes", new AlertDialog.OnClickListener() {
+						public void onClick(DialogInterface dialog, int which) {
+							mUserNamesToShow.remove(groupPosition);
+							((BaseAdapter) mAdapter).notifyDataSetChanged();
+							savePreferences();
+						}
+					});
+					adb.setNegativeButton("No", null);
+					adb.show();
+					return true;
+				} else {
+					return false;
+				}
 			} else {
 				return false;
-
 			}
 		}
 	}
@@ -366,6 +454,24 @@ public class MainActivity extends Activity {
 		// mDrawerList.setItemChecked(position, true);
 		setTitle(userName);
 		mDrawerLayout.closeDrawer(mDrawerList);
+	}
+
+	/**
+	 * @param string
+	 */
+	public void selectPiChart(String userName) {
+		mUserName = userName;
+		Log.e("Paul","Selecting pi chart for:"+userName);
+		Fragment fragment = new XpDistributionChartFragment();
+		Bundle args = new Bundle();
+		args.putString(ARG_USERNAME, userName);
+		fragment.setArguments(args);
+
+		FragmentManager fragmentManager = getFragmentManager();
+		fragmentManager.beginTransaction().replace(R.id.content_frame, fragment, "XpPiChart").commit();
+		setTitle(userName);
+		mDrawerLayout.closeDrawer(mDrawerList);
+		
 	}
 
 	void selectHitsoryGraph(String userName, int skillNumber, String skillName) {
@@ -391,11 +497,6 @@ public class MainActivity extends Activity {
 		mTitle = title;
 		getActionBar().setTitle(mTitle);
 	}
-
-	/**
-	 * When using the ActionBarDrawerToggle, you must call it during
-	 * onPostCreate() and onConfigurationChanged()...
-	 */
 
 	@Override
 	protected void onPostCreate(Bundle savedInstanceState) {

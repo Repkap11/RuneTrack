@@ -7,5 +7,6 @@
     <color name="left_drawer_background_color">#2244aa</color>
     <color name="user_profile_background_color">#c0c0c0</color>
     <color name="user_profile_grid_color">#000000</color>
-
+    <color name="left_drawer_sub_divider_color">#999999</color>
+    <color name="left_drawer_divider_color">#000000</color>
 </resources>
