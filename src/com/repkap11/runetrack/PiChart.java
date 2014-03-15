@@ -135,8 +135,10 @@ public class PiChart extends View implements OnTouchListener {
 
 		double curAngle = 0;
 		int index = -1;
-		while (curAngle < angle) {
-			curAngle += mDegrees[++index];
+		while (curAngle < angle && index -1< mDegrees.length) {
+			index++;
+			curAngle += mDegrees[index];
+			
 		}
 		double distance = getDistance(event.getX(), event.getY());
 		if ((distance < mDiameter / 2)) {

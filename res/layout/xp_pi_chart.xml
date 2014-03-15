@@ -16,14 +16,28 @@
             android:layout_height="wrap_content"
             android:layout_gravity="center" />
 
-        <TextView
-            android:id="@+id/user_profile_error_message"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:layout_gravity="center"
-            android:clickable="true"
-            android:gravity="center"
-            android:text="Failed to load weekly xp pi chart. Click to try again." />
+        <ViewSwitcher
+            android:id="@+id/switcher_user_got_no_xp"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent" >
+
+            <TextView
+                android:id="@+id/user_profile_error_message"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center"
+                android:clickable="true"
+                android:gravity="center"
+                android:text="Failed to load weekly xp pi chart. Click to try again." />
+
+            <TextView
+                android:id="@+id/user_gained_no_xp_error_message"
+                android:layout_width="fill_parent"
+                android:layout_height="fill_parent"
+                android:layout_gravity="center"
+                android:clickable="true"
+                android:gravity="center" />
+        </ViewSwitcher>
     </ViewSwitcher>
 
     <LinearLayout

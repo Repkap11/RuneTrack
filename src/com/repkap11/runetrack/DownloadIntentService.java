@@ -12,6 +12,7 @@ import java.nio.charset.Charset;
 import java.util.ArrayList;
 
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.jsoup.Connection;
 import org.jsoup.Jsoup;
@@ -40,6 +41,7 @@ public class DownloadIntentService extends IntentService {
 	public static final String PARAM_XP_COLORS = "PARAM_XP_COLORS";
 	public static final String PARAM_XP_PER_SKILL = "PARAM_XP_DEGREES";
 	public static final String PARAM_XP_SKILL_NAMES = "PARAM_XP_SKILL_NAMES";
+	public static final String PARAM_XP_USER_GAINED_NO_XP = "PARAM_XP_USER_GAINED_NO_XP";
 
 	/**
 	 * @param name
@@ -68,6 +70,7 @@ public class DownloadIntentService extends IntentService {
 		int[] colors;
 		int[] xpPerSkill;
 		String[] skillNames;
+		boolean userGainedNoXp = false;
 		String userName = intent.getStringExtra(PARAM_USERNAME);
 		try {
 			userName = URLEncoder.encode(userName, Charset.defaultCharset().name());
@@ -85,10 +88,15 @@ public class DownloadIntentService extends IntentService {
 			JSONObject mainObject = new JSONObject(xpString);
 			JSONArray temp = mainObject.getJSONArray("elements");
 			JSONObject temp2 = temp.getJSONObject(0);
-			//Log.e("Paul", temp2.toString(2));
-			JSONArray degreesArray = temp2.getJSONArray("values");
-			//Log.e("Paul", degreesArray.toString(2));
-			 xpPerSkill = new int[degreesArray.length()];
+			// Log.e("Paul", temp2.toString(2));
+			JSONArray degreesArray = null;
+			try {
+				degreesArray = temp2.getJSONArray("values");
+			} catch (JSONException ex) {
+				userGainedNoXp = true;
+			}
+			// Log.e("Paul", degreesArray.toString(2));
+			xpPerSkill = new int[degreesArray.length()];//null degreesArray means userGainedNoXp = true;
 			skillNames = new String[degreesArray.length()];
 			long totalxp = 0;
 			for (int i = 0; i < degreesArray.length(); i++) {
@@ -102,7 +110,7 @@ public class DownloadIntentService extends IntentService {
 			colors = new int[colorsArray.length()];
 			for (int i = 0; i < colorsArray.length(); i++) {
 				int color = Color.parseColor(colorsArray.getString(i));
-				//Log.e("Paul", "Color:"+colorsArray.getString(i)+" : "+color);
+				// Log.e("Paul", "Color:"+colorsArray.getString(i)+" : "+color);
 				colors[i] = color;
 			}
 
@@ -110,7 +118,7 @@ public class DownloadIntentService extends IntentService {
 			xpPerSkill = null;
 			colors = null;
 			skillNames = null;
-			e.printStackTrace();
+			//e.printStackTrace();
 			Log.e("Paul", "Caught exception downloading, pi chart is empty");
 
 		}
@@ -120,6 +128,7 @@ public class DownloadIntentService extends IntentService {
 		broadcastIntent.putExtra(PARAM_XP_PER_SKILL, xpPerSkill);
 		broadcastIntent.putExtra(PARAM_XP_COLORS, colors);
 		broadcastIntent.putExtra(PARAM_XP_SKILL_NAMES, skillNames);
+		broadcastIntent.putExtra(PARAM_XP_USER_GAINED_NO_XP,userGainedNoXp);
 		sendBroadcast(broadcastIntent);
 	}
 
