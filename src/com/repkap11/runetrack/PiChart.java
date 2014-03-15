@@ -35,7 +35,7 @@ public class PiChart extends View {
 		float ww = (float) w - xpad;
 		float hh = (float) h - ypad;
 
-		// Figure out how big we can make the pie.
+		// Figure out how big we can make the pie
 		int diameter = (int) Math.min(ww, hh);
 		rectf = new RectF(0, 0, diameter, diameter);
 		setMeasuredDimension(diameter, diameter);
