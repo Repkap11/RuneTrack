@@ -186,6 +186,7 @@ public class HistoryGraphFragment extends Fragment {
 		graphView.getGraphViewStyle().setVerticalLabelsColor(Color.BLACK);
 		graphView.getGraphViewStyle().setVerticalLabelsAlign(Align.RIGHT);
 		graphView.getGraphViewStyle().setTextSize(dpToPixals(10));
+		graphView.getGraphViewStyle().setNumVerticalLabels(10);
 		graphView.setCustomLabelFormatter(new CustomLabelFormatter() {
 			@Override
 			public String formatLabel(double value, boolean isXValue) {

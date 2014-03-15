@@ -9,6 +9,8 @@ import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.util.Log;
 import android.view.View;
+import android.view.*;
+import android.widget.*;
 
 public class PiChart extends View {
 	@Override
@@ -71,5 +73,34 @@ public class PiChart extends View {
 		this.colors = colors;
 		invalidate();
 	}
-
+	private Toast mToast;
+	@Override
+	public boolean onTouchEvent(MotionEvent event) {
+		// TODO Auto-generated method stub
+		float x = event.getX();
+		float y = event.getY();
+		if (mToast != null){
+			mToast.cancel();
+		}
+		if (mToast == null){
+			mToast = Toast.makeText(getContext(),"" ,Toast.LENGTH_SHORT);
+		}
+		switch (event.getAction()) {
+			case MotionEvent.ACTION_DOWN:
+				mToast.setText("Touch Down x="+x+"  y="+y );
+				//Handle Touch Down
+				break;
+			case MotionEvent.ACTION_MOVE:
+				mToast.setText("Touch x="+x+"  y="+y );
+				//Handle Touch Move
+				break;
+			case MotionEvent.ACTION_UP:
+				mToast.setText("Touch Up x="+x+"  y="+y);
+				//Handle Touch Up
+				break;
+		}
+		mToast.setDuration(Toast.LENGTH_SHORT);
+		mToast.show();
+		return false;
+	}
 }

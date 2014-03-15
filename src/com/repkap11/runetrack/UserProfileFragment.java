@@ -34,6 +34,7 @@ import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
+import android.widget.*;
 
 /**
  * Fragment that appears in the "content_frame", shows a planet
@@ -178,8 +179,6 @@ public class UserProfileFragment extends Fragment {
 
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
-				if (bounds == null)
-					bounds = calculateLayoutSize();
 				View returnView = null;
 				ImageView skillIcon;
 				if (convertView != null) {
@@ -193,6 +192,8 @@ public class UserProfileFragment extends Fragment {
 					//skillIcon.setMaxWidth((int) (bounds.imageSize ));//* getResources().getDisplayMetrics().density)
 					//skillIcon.setMinimumWidth((int) (bounds.imageSize));
 				}
+				if (bounds == null)
+					bounds = calculateLayoutSize((ListView)parent);
 				ArrayList<String> skill = ((UserProfileSkill) this.getItem(position)).mListOfItems;
 				if (!((UserProfileSkill) this.getItem(position)).skillName.equals("")) {
 					Drawable imageIcon = getResources().getDrawable(
@@ -252,12 +253,14 @@ public class UserProfileFragment extends Fragment {
 				return returnView;
 			}
 
-			private UserProfileBounds calculateLayoutSize() {
+			private UserProfileBounds calculateLayoutSize(ListView view) {
 				Log.e("Paul", "Calculating Bounds");
 				Display d = ((WindowManager) getActivity().getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 				Point p = new Point();
 				d.getSize(p);
-				int width = p.x;
+				int oldwidth = p.x;
+				int width = oldwidth - view.getPaddingLeft() - view.getPaddingRight() - ((ViewGroup.MarginLayoutParams)view.getLayoutParams()).leftMargin - ((ViewGroup.MarginLayoutParams)view.getLayoutParams()).rightMargin;
+				//Toast.makeText(UserProfileFragment.this.getActivity(),"old:"+oldwidth+" new:"+width,Toast.LENGTH_SHORT).show();
 				int total = 0;
 				int[] totals = new int[((UserProfileSkill) this.getItem(0)).mListOfItems.size()];
 				for (int i = 0; i < totals.length; i++) {
