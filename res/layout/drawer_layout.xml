@@ -19,10 +19,16 @@
         android:layout_height="match_parent"
         android:layout_gravity="start"
         android:background="@color/left_drawer_background_color"
+        android:childDivider="@android:color/transparent"
         android:choiceMode="singleChoice"
+        android:divider="@android:color/transparent"
+        android:groupIndicator="@android:color/transparent" >
+
+        <!--
         android:childDivider="@color/left_drawer_sub_divider_color"
         android:divider="@color/left_drawer_divider_color"
-        android:dividerHeight="1dp" >
+         android:dividerHeight="1dp"
+        -->
     </ExpandableListView>
 
 </android.support.v4.widget.DrawerLayout>

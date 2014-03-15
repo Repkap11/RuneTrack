@@ -74,6 +74,7 @@ public class MainActivity extends Activity {
 	private ExpandableListAdapter mAdapter;
 	public String mUserName;
 	private static final String USER_PROFILE_NAMES = "USER_PROFILE_NAMES";
+	public static final String TAG = "MainActivity";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -86,7 +87,7 @@ public class MainActivity extends Activity {
 
 		mUserNamesToShow = getStringArrayPref(prefs, USER_PROFILE_NAMES);
 		if (mUserNamesToShow.size() == 0) {
-			Log.e("Paul", "Not using saved values");
+			Log.e(TAG, "Not using saved values");
 			mUserNamesToShow = new ArrayList<String>(Arrays.asList(new String[] { "Repkap11", "Za phod", "Great One", "Zezima", "Repkam09",
 					"S U O M I", "Jake", "Drumgun", "Alkan" }));
 		}
@@ -112,7 +113,7 @@ public class MainActivity extends Activity {
 
 			@Override
 			public View getGroupView(int groupPosition, boolean isExpanded, View convertView, ViewGroup parent) {
-				// Log.e("Paul", "Getting view " + position);
+				// Log.e(TAG, "Getting view " + position);
 				TextView view = (TextView) getLayoutInflater().inflate(R.layout.drawer_list_item, parent, false);
 				if (groupPosition == getGroupCount() - 1) {
 					view.setText("Add New User");
@@ -153,13 +154,12 @@ public class MainActivity extends Activity {
 
 			@Override
 			public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
-				// Log.e("Paul", "Getting view " + position);
-				TextView view = (TextView) convertView;
-				if (view == null) {
-					view = (TextView) getLayoutInflater().inflate(R.layout.drawer_list_sub_item, parent, false);
+				// Log.e(TAG, "Getting view " + position);
+				if (convertView == null) {
+					convertView  =  getLayoutInflater().inflate(R.layout.drawer_list_sub_item, parent, false);
 				}
-				view = (TextView) getLayoutInflater().inflate(R.layout.drawer_list_sub_item, parent, false);
-				view.setText(childPosition == 0 ? "    User Profile":"    Weekly Xp Distribution");
+				TextView view = (TextView) convertView.findViewById(R.id.drawer_list_sub_item_textview);
+				view.setText(childPosition == 0 ? "     User Profile":"      Weekly Xp Distribution");
 				return view;
 			}
 
@@ -306,7 +306,7 @@ public class MainActivity extends Activity {
 		OnFocusChangeListener focus = new OnFocusChangeListener() {
 			@Override
 			public void onFocusChange(View v, boolean hasFocus) {
-				Log.e("Paul", "Focus Changed");
+				Log.e(TAG, "Focus Changed");
 				if (!hasFocus) {
 					menu.findItem(R.id.action_bar_search_user).collapseActionView();
 				}
@@ -359,7 +359,7 @@ public class MainActivity extends Activity {
 	private class DrawerGroupClickListener implements OnGroupClickListener {
 		@Override
 		public boolean onGroupClick(ExpandableListView parent, View view, int groupPosition, long id) {
-			Log.e("Paul", "onGroupClick called");
+			Log.e(TAG, "onGroupClick called");
 			if (view.getTag() != null) {
 				if (view.getTag().equals(true)) {
 					return false;
@@ -398,11 +398,11 @@ public class MainActivity extends Activity {
 	private class DrawerChildClickListener implements OnChildClickListener {
 		@Override
 		public boolean onChildClick(ExpandableListView parent, View view, int groupPosition, int childPosition, long id) {
-			Log.e("Paul", "onChildClick called:"+groupPosition+":"+childPosition);
-			if (childPosition == 0){
+			Log.e(TAG, "onChildClick called:" + groupPosition + ":" + childPosition);
+			if (childPosition == 0) {
 				selectUserProfileByName(mUserNamesToShow.get(groupPosition));
 			}
-			if (childPosition == 1){
+			if (childPosition == 1) {
 				selectPiChart(mUserNamesToShow.get(groupPosition));
 			}
 			return true;
@@ -413,12 +413,15 @@ public class MainActivity extends Activity {
 	private class DrawerGroupLongClickListener implements ListView.OnItemLongClickListener {
 
 		@Override
-		public boolean onItemLongClick(AdapterView<?> arg0, View view, final int groupPosition, long dontknow) {
-			Log.e("Paul", "onGroupLongClick called");
+		public boolean onItemLongClick(AdapterView<?> arg0, View view, final int position, long dontknow) {
+			//Log.e(TAG, "onGroupLongClick called");
 			if (view.getTag() != null) {
 				if (view.getTag().equals(true)) {
+					final long packedPosition =  mDrawerList.getExpandableListPosition(position);
+					final int groupPosition = ExpandableListView.getPackedPositionGroup(packedPosition);
 					AlertDialog.Builder adb = new AlertDialog.Builder(MainActivity.this);
 					adb.setTitle("Delete User?");
+					Log.e(TAG,"groupPosition:"+groupPosition);
 					adb.setMessage("Are you sure you want to remove\n" + mUserNamesToShow.get(groupPosition));
 					adb.setPositiveButton("Yes", new AlertDialog.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
@@ -461,7 +464,7 @@ public class MainActivity extends Activity {
 	 */
 	public void selectPiChart(String userName) {
 		mUserName = userName;
-		Log.e("Paul","Selecting pi chart for:"+userName);
+		Log.e(TAG, "Selecting pi chart for:" + userName);
 		Fragment fragment = new XpDistributionChartFragment();
 		Bundle args = new Bundle();
 		args.putString(ARG_USERNAME, userName);
@@ -471,7 +474,7 @@ public class MainActivity extends Activity {
 		fragmentManager.beginTransaction().replace(R.id.content_frame, fragment, "XpPiChart").commit();
 		setTitle(userName);
 		mDrawerLayout.closeDrawer(mDrawerList);
-		
+
 	}
 
 	void selectHitsoryGraph(String userName, int skillNumber, String skillName) {

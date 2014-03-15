@@ -45,7 +45,7 @@ public class XpDistributionChartFragment extends Fragment {
 
 	private PiChart mPiChart;
 	private ResponseReceiver receiver;
-	public float[] downloadResult;
+	public int[] downloadResult;
 	public int[] downloadResult2;
 	private boolean needsDownload = true;
 	private boolean needsToShowDownloadFailure = false;
@@ -55,6 +55,7 @@ public class XpDistributionChartFragment extends Fragment {
 	private TextView failureRetryButton;
 	private int skillNumber;
 	private String skillName;
+	private String[] downloadResult3;
 
 	public XpDistributionChartFragment() {
 		// Empty constructor required for fragment subclasses
@@ -112,7 +113,8 @@ public class XpDistributionChartFragment extends Fragment {
 		super.onSaveInstanceState(outState);
 		if (downloadResult != null) {
 			outState.putIntArray(DownloadIntentService.PARAM_XP_COLORS, downloadResult2);
-			outState.putFloatArray(DownloadIntentService.PARAM_XP_DEGREES, downloadResult);
+			outState.putIntArray(DownloadIntentService.PARAM_XP_PER_SKILL, downloadResult);
+			outState.putStringArray(DownloadIntentService.PARAM_XP_SKILL_NAMES, downloadResult3);
 			outState.putBoolean("needsToShowDownloadFailure", needsToShowDownloadFailure);
 		}
 	}
@@ -141,11 +143,12 @@ public class XpDistributionChartFragment extends Fragment {
 
 			needsToShowDownloadFailure = savedInstanceState.getBoolean("needsToShowDownloadFailure");
 			Log.e("Paul", "needsToShowDownloadFailure updated from state : " + needsToShowDownloadFailure);
-			downloadResult = savedInstanceState.getFloatArray(DownloadIntentService.PARAM_XP_DEGREES);
+			downloadResult = savedInstanceState.getIntArray(DownloadIntentService.PARAM_XP_PER_SKILL);
 			downloadResult2 = savedInstanceState.getIntArray(DownloadIntentService.PARAM_XP_COLORS);
+			downloadResult3 = savedInstanceState.getStringArray(DownloadIntentService.PARAM_XP_SKILL_NAMES);
 			if (downloadResult != null) {
 				needsDownload = false;
-				applyDownloadResult(downloadResult, downloadResult2);
+				applyDownloadResult(downloadResult, downloadResult2,downloadResult3);
 			}
 		}
 		return rootView;
@@ -155,8 +158,9 @@ public class XpDistributionChartFragment extends Fragment {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			// Log.e("Paul", "before crash");
-			downloadResult = intent.getFloatArrayExtra(DownloadIntentService.PARAM_XP_DEGREES);
+			downloadResult = intent.getIntArrayExtra(DownloadIntentService.PARAM_XP_PER_SKILL);
 			downloadResult2 = intent.getIntArrayExtra(DownloadIntentService.PARAM_XP_COLORS);
+			downloadResult3 = intent.getStringArrayExtra(DownloadIntentService.PARAM_XP_SKILL_NAMES);
 			if (downloadResult == null || downloadResult.length == 0) {
 				switcherContent.setDisplayedChild(0);
 				switcherFailure.setDisplayedChild(1);
@@ -165,14 +169,14 @@ public class XpDistributionChartFragment extends Fragment {
 				// "Failure", Toast.LENGTH_SHORT).show();
 			} else {
 				switcherContent.setDisplayedChild(1);
-				applyDownloadResult(downloadResult, downloadResult2);
+				applyDownloadResult(downloadResult, downloadResult2,downloadResult3);
 			}
 		}
 	}
 
-	public void applyDownloadResult(final float[] downloadResult, final int[] downloadResult2) {
+	public void applyDownloadResult(final int[] downloadResult4, final int[] downloadResult2, String[] downloadResult3) {
  
-		 mPiChart.setPiChartData(downloadResult, downloadResult2);
+		 mPiChart.setPiChartData(downloadResult4, downloadResult2,downloadResult3);
 
 	}
 

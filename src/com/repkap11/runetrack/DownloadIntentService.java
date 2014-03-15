@@ -38,7 +38,8 @@ public class DownloadIntentService extends IntentService {
 	public static final String PARAM_USER_PROFILE_TABLE2 = "PARAM_USER_PROFILE_TABLE2";
 	private static final int TIMEOUT = 5 * 1000;
 	public static final String PARAM_XP_COLORS = "PARAM_XP_COLORS";
-	public static final String PARAM_XP_DEGREES = "PARAM_XP_DEGREES";
+	public static final String PARAM_XP_PER_SKILL = "PARAM_XP_DEGREES";
+	public static final String PARAM_XP_SKILL_NAMES = "PARAM_XP_SKILL_NAMES";
 
 	/**
 	 * @param name
@@ -65,7 +66,8 @@ public class DownloadIntentService extends IntentService {
 	 */
 	private void doXpPiChart(Intent intent) {
 		int[] colors;
-		float[] degrees;
+		int[] xpPerSkill;
+		String[] skillNames;
 		String userName = intent.getStringExtra(PARAM_USERNAME);
 		try {
 			userName = URLEncoder.encode(userName, Charset.defaultCharset().name());
@@ -86,8 +88,8 @@ public class DownloadIntentService extends IntentService {
 			//Log.e("Paul", temp2.toString(2));
 			JSONArray degreesArray = temp2.getJSONArray("values");
 			//Log.e("Paul", degreesArray.toString(2));
-			int[] xpPerSkill = new int[degreesArray.length()];
-			String[] skillNames = new String[degreesArray.length()];
+			 xpPerSkill = new int[degreesArray.length()];
+			skillNames = new String[degreesArray.length()];
 			long totalxp = 0;
 			for (int i = 0; i < degreesArray.length(); i++) {
 				String skillName = degreesArray.getJSONObject(i).getString("label");
@@ -96,13 +98,6 @@ public class DownloadIntentService extends IntentService {
 				xpPerSkill[i] = xp;
 				totalxp += xp;
 			}
-			degrees = new float[xpPerSkill.length];
-			float sum = 0;
-			for (int i = 0; i < degrees.length; i++) {
-				degrees[i] = (float) xpPerSkill[i] *360 / (float) totalxp;
-				sum += degrees[i];
-				//Log.e("Paul", "Angle::"+degrees[i]+":"+skillNames[i]);
-			}
 			JSONArray colorsArray = temp2.getJSONArray("colours");
 			colors = new int[colorsArray.length()];
 			for (int i = 0; i < colorsArray.length(); i++) {
@@ -110,11 +105,11 @@ public class DownloadIntentService extends IntentService {
 				//Log.e("Paul", "Color:"+colorsArray.getString(i)+" : "+color);
 				colors[i] = color;
 			}
-			Log.e("Paul", "Angle:"+sum);
 
 		} catch (Exception e) {
-			degrees = null;
+			xpPerSkill = null;
 			colors = null;
+			skillNames = null;
 			e.printStackTrace();
 			Log.e("Paul", "Caught exception downloading, pi chart is empty");
 
@@ -122,8 +117,9 @@ public class DownloadIntentService extends IntentService {
 		Intent broadcastIntent = new Intent();
 		broadcastIntent.setAction(PARAM_USERNAME);
 		broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
-		broadcastIntent.putExtra(PARAM_XP_DEGREES, degrees);
+		broadcastIntent.putExtra(PARAM_XP_PER_SKILL, xpPerSkill);
 		broadcastIntent.putExtra(PARAM_XP_COLORS, colors);
+		broadcastIntent.putExtra(PARAM_XP_SKILL_NAMES, skillNames);
 		sendBroadcast(broadcastIntent);
 	}
 
