@@ -10,7 +10,7 @@
 			<attribute name="javadoc_location" value="http://htmlunit.sourceforge.net/apidocs"/>
 		</attributes>
 	</classpathentry>
-	<classpathentry excluding="com/repkap11/runetrack/slideout/SlideoutActivity.java|com/repkap11/runetrack/HtmlDownload.java" kind="src" path="src"/>
+	<classpathentry excluding="com/repkap11/runetrack/HtmlDownload.java" kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
 	<classpathentry exported="true" kind="con" path="com.android.ide.eclipse.adt.LIBRARIES"/>

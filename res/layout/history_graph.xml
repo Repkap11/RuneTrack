@@ -18,19 +18,21 @@
 
         <TextView
             android:id="@+id/user_profile_error_message"
-            android:clickable="true"
-            android:gravity="center"
             android:layout_width="fill_parent"
             android:layout_height="fill_parent"
-            android:text="Failed to load stat progress. Click to try again."
-            android:layout_gravity="center" />
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:gravity="center"
+            android:text="Failed to load stat progress. Click to try again." />
     </ViewSwitcher>
 
-    <LinearLayout
-        android:orientation="horizontal"
-        android:id="@+id/content"
+    <ListView
+        android:id="@+id/history_graph_content"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:gravity="center" />
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:background="@drawable/full_back_text"
+        android:divider="@color/user_profile_grid_color"
+        android:dividerHeight="1dp" />
 
 </ViewSwitcher>

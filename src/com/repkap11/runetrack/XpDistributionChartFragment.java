@@ -145,7 +145,7 @@ public class XpDistributionChartFragment extends Fragment {
 		switcherFailure = (ViewSwitcher) rootView.findViewById(R.id.switcher_loading_failure);
 		switcherUserGainedNoXP = (ViewSwitcher) rootView.findViewById(R.id.switcher_user_got_no_xp);
 
-		mPiChart = ((PiChart) rootView.findViewById(R.id.content));
+		mPiChart = ((PiChart) rootView.findViewById(R.id.xp_pi_chart_content));
 
 		getActivity().setTitle(userName);
 		needsDownload = true;

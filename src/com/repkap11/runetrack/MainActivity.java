@@ -128,7 +128,6 @@ public class MainActivity extends Activity {
 
 			@Override
 			public long getGroupId(int groupPosition) {
-				// TODO Auto-generated method stub
 				return 0;
 			}
 
@@ -139,8 +138,7 @@ public class MainActivity extends Activity {
 
 			@Override
 			public Object getGroup(int groupPosition) {
-				// TODO Auto-generated method stub
-				return "New Group Data Position:" + groupPosition;
+				return null;
 			}
 
 			@Override
@@ -170,7 +168,6 @@ public class MainActivity extends Activity {
 
 			@Override
 			public Object getChild(int groupPosition, int childPosition) {
-				// TODO Auto-generated method stub
 				return null;
 			}
 		};
@@ -210,10 +207,11 @@ public class MainActivity extends Activity {
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 
 		if (savedInstanceState == null) {
+			//TODO what fragment to initialize to 
 			mUserName = mUserNamesToShow.get(0);
-			selectUserProfileByName(mUserName);
-			// selectHitsoryGraph(mUserName, 0, "Overall");
-			selectPiChart(mUserName);
+			//selectUserProfileByName(mUserName);
+			selectHitsoryGraph(mUserName, 0, "Overall");
+			//selectPiChart(mUserName);
 		} else {
 			// Fragment will take care of most of the state...
 			mUserName = savedInstanceState.getString(ARG_USERNAME);

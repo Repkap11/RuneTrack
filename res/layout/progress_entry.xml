@@ -6,7 +6,7 @@
     android:layout_centerVertical="true" >
 
     <ImageView
-        android:id="@+id/user_profile_skill_image"
+        android:id="@+id/progress_skill_image"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignBottom="@+id/text1"
@@ -69,16 +69,6 @@
 
     <RelativeLayout
         android:id="@id/text6"
-        android:layout_width="wrap_content"
-        android:layout_height="fill_parent"
-        android:layout_toLeftOf="@+id/text7"
-        android:background="@drawable/back_text" >
-
-        <include layout="@layout/user_profile_skill_text_element" />
-    </RelativeLayout>
-
-    <RelativeLayout
-        android:id="@id/text7"
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_alignParentRight="true"

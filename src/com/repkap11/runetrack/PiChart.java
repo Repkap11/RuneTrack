@@ -66,7 +66,6 @@ public class PiChart extends View implements OnTouchListener {
 
 	@Override
 	protected void onDraw(Canvas canvas) {
-		// TODO Auto-generated method stub
 		super.onDraw(canvas);
 		if (mDegrees != null) {
 			temp = 0;
@@ -104,7 +103,6 @@ public class PiChart extends View implements OnTouchListener {
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
-		// TODO Auto-generated method stub
 		switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
 		case MotionEvent.ACTION_MOVE:
