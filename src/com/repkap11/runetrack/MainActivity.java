@@ -71,7 +71,7 @@ public class MainActivity extends Activity {
 	private CharSequence mTitle;
 	private List<String> mUserNamesToShow;
 	private ExpandableListView mDrawerList;
-	private ExpandableListAdapter mAdapter;
+	private BaseExpandableListAdapter mAdapter;
 	public String mUserName;
 	private static final String USER_PROFILE_NAMES = "USER_PROFILE_NAMES";
 	public static final String TAG = "MainActivity";
@@ -373,7 +373,7 @@ public class MainActivity extends Activity {
 						public void onClick(DialogInterface dialog, int which) {
 							String userName = input.getText().toString();
 							mUserNamesToShow.add(userName);
-							((BaseAdapter) mAdapter).notifyDataSetChanged();
+							mAdapter.notifyDataSetChanged();
 							savePreferences();
 							selectUserProfileByName(userName);
 						}
@@ -424,7 +424,7 @@ public class MainActivity extends Activity {
 					adb.setPositiveButton("Yes", new AlertDialog.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
 							mUserNamesToShow.remove(groupPosition);
-							((BaseAdapter) mAdapter).notifyDataSetChanged();
+							 mAdapter.notifyDataSetChanged();
 							savePreferences();
 						}
 					});
