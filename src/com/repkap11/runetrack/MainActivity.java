@@ -88,8 +88,7 @@ public class MainActivity extends Activity {
 		mUserNamesToShow = getStringArrayPref(prefs, USER_PROFILE_NAMES);
 		if (mUserNamesToShow.size() == 0) {
 			Log.e(TAG, "Not using saved values");
-			mUserNamesToShow = new ArrayList<String>(Arrays.asList(new String[] { "Repkap11", "Za phod", "Great One", "Zezima", "Repkam09",
-					"S U O M I", "Jake", "Drumgun", "Alkan" }));
+			mUserNamesToShow = new ArrayList<String>(Arrays.asList(new String[] { "Repkap11", "Zezima","S U O M I", "Jake", "Drumgun", "Alkan" }));
 		}
 		// set a custom shadow that overlays the main content when the drawer
 		// opens
@@ -209,8 +208,8 @@ public class MainActivity extends Activity {
 		if (savedInstanceState == null) {
 			//TODO what fragment to initialize to 
 			mUserName = mUserNamesToShow.get(0);
-			//selectUserProfileByName(mUserName);
-			selectHitsoryGraph(mUserName, 0, "Overall");
+			selectUserProfileByName(mUserName);
+			//selectHitsoryGraph(mUserName, 0, "Overall");
 			//selectPiChart(mUserName);
 		} else {
 			// Fragment will take care of most of the state...

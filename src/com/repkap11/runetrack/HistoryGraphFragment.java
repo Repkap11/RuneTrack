@@ -23,6 +23,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.util.Log;
 import android.util.TypedValue;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -186,6 +187,7 @@ public class HistoryGraphFragment extends Fragment {
 						new UserProfileSkill(new ArrayList<String>(Arrays
 								.asList(new String[] { "", "#", "Date", "Rank", "Level", "Xp", "Xp Gained" }))));
 				downloadResult3.add(0, new UserProfileSkill(new ArrayList<String>(Arrays.asList(new String[] { "", "", "", "", "", "", "" }))));
+				downloadResult3.add(0, new UserProfileSkill(new ArrayList<String>(Arrays.asList(new String[] { "", "", "", "", "", "", "" }))));
 				switcherContent.setDisplayedChild(1);
 				applyDownloadResult(downloadResult, downloadResult2, downloadResult3);
 			}
@@ -204,22 +206,28 @@ public class HistoryGraphFragment extends Fragment {
 				if (position == 1) {
 					return 1;
 				}
-				return 2;
+				if (position == 2) {
+					return 2;
+				}
+				return 3;
 			}
 
 			@Override
 			public int getViewTypeCount() {
-				return 3;
+				return 4;
 			}
 
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
 				// Log.e(TAG,"Get view called for :"+position);
 				if (position == 0) {
+					return getGraphHeader(convertView);
+				}
+				if (position == 1) {
 					return getGraphView(convertView, result, result2);
 				}
-				if (convertView != null) {
-				} else {
+
+				if (convertView == null) {
 					ImageView skillIcon;
 					LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 					convertView = inflater.inflate(R.layout.progress_entry, mProgressHolder, false);
@@ -255,7 +263,24 @@ public class HistoryGraphFragment extends Fragment {
 				}
 				return convertView;
 			}
+
 		});
+	}
+
+	protected View getGraphHeader(View convertView) {
+		if (convertView != null) {
+			return convertView;
+		}
+
+		// LayoutInflater inflater = (LayoutInflater)
+		// getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+		TextView returnView = new TextView(getActivity());
+		// LinearLayout returnView = (LinearLayout)
+		// inflater.inflate(R.layout.grid_view_holder, mProgressHolder, false);
+		returnView.setText(userName + "'s Skill History in " + skillName);
+		returnView.setGravity(Gravity.CENTER_HORIZONTAL);
+		returnView.setTextColor(Color.BLACK);
+		return returnView;
 	}
 
 	protected View getGraphView(View convertView, final double[] result, final String[] result2) {
@@ -266,7 +291,7 @@ public class HistoryGraphFragment extends Fragment {
 		LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		LinearLayout returnView = (LinearLayout) inflater.inflate(R.layout.grid_view_holder, mProgressHolder, false);
 
-		final GraphView graphView = new LineGraphView(this.getActivity(), skillName);
+		final GraphView graphView = new LineGraphView(this.getActivity(),"");
 		graphView.getGraphViewStyle().setGridColor(Color.WHITE);
 		graphView.getGraphViewStyle().setHorizontalLabelsColor(Color.BLACK);
 		graphView.getGraphViewStyle().setVerticalLabelsColor(Color.BLACK);
