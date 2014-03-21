@@ -46,9 +46,9 @@ import com.jjoe64.graphview.LineGraphView;
 /**
  * Fragment that appears in the "content_frame", shows a planet
  */
-public class HistoryGraphFragment extends FragmentBase {
+public class RuneTrackHighScoresFragment extends FragmentBase {
 
-	public static final String TAG = "HistoryGraphFragment";
+	public static final String TAG = "RuneTrackHighScoresFragment";
 
 	@Override
 	public void onDetach() {
@@ -58,19 +58,16 @@ public class HistoryGraphFragment extends FragmentBase {
 
 	private ListView mProgressHolder;
 	private ResponseReceiver receiver;
-	public double[] downloadResult;
-	public String[] downloadResult2;
 	private boolean needsDownload = true;
 	private boolean needsToShowDownloadFailure = false;
-	private String userName;
 	private ViewSwitcher switcherFailure;
 	private ViewSwitcher switcherContent;
 	private TextView failureRetryButton;
-	private int skillNumber;
+	private int pageNumber;
 	private String skillName;
-	public ArrayList<Parcelable> downloadResult3;
+	public ArrayList<Parcelable> downloadResult;
 
-	public HistoryGraphFragment() {
+	public RuneTrackHighScoresFragment() {
 		// Empty constructor required for fragment subclasses
 	}
 
@@ -88,7 +85,7 @@ public class HistoryGraphFragment extends FragmentBase {
 	}
 
 	private void failureRetryOnClick(View v) {
-		((MainActivity) this.getActivity()).selectHitsoryGraph(userName, skillNumber, skillName);
+		((MainActivity) this.getActivity()).selectRuneTrackHighScores(skillName, pageNumber);
 	}
 
 	@Override
@@ -100,10 +97,9 @@ public class HistoryGraphFragment extends FragmentBase {
 		if (needsDownload) {
 			switcherContent.setDisplayedChild(0);
 			Intent msgIntent = new Intent(this.getActivity(), DownloadIntentService.class);
-			msgIntent.putExtra(DownloadIntentService.PARAM_USERNAME, userName);
-			msgIntent.putExtra(DownloadIntentService.PARAM_SKILL_NUMBER, skillNumber);
+			msgIntent.putExtra(DownloadIntentService.PARAM_PAGE_NUMBER, pageNumber);
 			msgIntent.putExtra(DownloadIntentService.PARAM_SKILL_NAME, skillName);
-			msgIntent.putExtra(DownloadIntentService.PARAM_WHICH_DATA, DownloadIntentService.PARAM_HISTORY_GRAPH);
+			msgIntent.putExtra(DownloadIntentService.PARAM_WHICH_DATA, DownloadIntentService.PARAM_RUNETRACK_HIGH_SCORES);
 			this.getActivity().startService(msgIntent);
 			IntentFilter filter = new IntentFilter(DownloadIntentService.PARAM_USERNAME);
 
@@ -126,9 +122,7 @@ public class HistoryGraphFragment extends FragmentBase {
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
 		if (downloadResult != null) {
-			outState.putDoubleArray(DownloadIntentService.PARAM_USERNAME, downloadResult);
-			outState.putStringArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE, downloadResult2);
-			outState.putParcelableArrayList(DownloadIntentService.PARAM_PROGRESS_ENTRIES, downloadResult3);
+			outState.putParcelableArrayList(DownloadIntentService.PARAM_HIGH_SCORES_ENTRIES, downloadResult);
 			outState.putBoolean("needsToShowDownloadFailure", needsToShowDownloadFailure);
 		}
 	}
@@ -145,23 +139,20 @@ public class HistoryGraphFragment extends FragmentBase {
 		});
 		switcherContent = (ViewSwitcher) rootView.findViewById(R.id.switcher_loading_content);
 		switcherFailure = (ViewSwitcher) rootView.findViewById(R.id.switcher_loading_failure);
-		userName = getArguments().getString(MainActivity.ARG_USERNAME);
 		skillName = getArguments().getString(MainActivity.ARG_SKILL_NAME);
-		skillNumber = getArguments().getInt(MainActivity.ARG_SKILL_NUMBER);
+		pageNumber = getArguments().getInt(MainActivity.ARG_PAGE_NUMBER);
 		mProgressHolder = ((ListView) rootView.findViewById(R.id.history_graph_content));
-		getActivity().setTitle(userName);
+		getActivity().setTitle("RuneTrack High Scores");
 		needsDownload = true;
 
 		if (savedInstanceState != null) {
 
 			needsToShowDownloadFailure = savedInstanceState.getBoolean("needsToShowDownloadFailure");
 			Log.e(TAG, "needsToShowDownloadFailure updated from state : " + needsToShowDownloadFailure);
-			downloadResult = savedInstanceState.getDoubleArray(DownloadIntentService.PARAM_USERNAME);
-			downloadResult2 = savedInstanceState.getStringArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE);
-			downloadResult3 = savedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_PROGRESS_ENTRIES);
+			downloadResult = savedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_HIGH_SCORES_ENTRIES);
 			if (downloadResult != null) {
 				needsDownload = false;
-				applyDownloadResult(downloadResult, downloadResult2, downloadResult3);
+				applyDownloadResult(downloadResult);
 			}
 		}
 		return rootView;
@@ -171,31 +162,27 @@ public class HistoryGraphFragment extends FragmentBase {
 		@Override
 		public void onReceive(Context context, Intent intent) {
 			// Log.e(TAG, "before crash");
-			downloadResult = intent.getDoubleArrayExtra(DownloadIntentService.PARAM_USER_PROFILE_TABLE);
-			downloadResult2 = intent.getStringArrayExtra(DownloadIntentService.PARAM_USER_PROFILE_TABLE2);
-			downloadResult3 = intent.getParcelableArrayListExtra(DownloadIntentService.PARAM_PROGRESS_ENTRIES);
-			if (downloadResult == null || downloadResult3 == null || downloadResult.length == 0 || downloadResult3.size() == 0) {
-				Log.e(TAG, "downloadResult3:" + downloadResult3);
+			downloadResult = intent.getParcelableArrayListExtra(DownloadIntentService.PARAM_HIGH_SCORES_ENTRIES);
+			if (downloadResult == null || downloadResult.size() == 0) {
 				switcherContent.setDisplayedChild(0);
 				switcherFailure.setDisplayedChild(1);
 				needsToShowDownloadFailure = true;
 				// Toast.makeText(HistoryGraphFragment.this.getActivity(),
 				// "Failure", Toast.LENGTH_SHORT).show();
 			} else {
-				downloadResult3.add(
-						0,
-						new UserProfileSkill(new ArrayList<String>(Arrays
-								.asList(new String[] { "", "#", "Date", "Rank", "Level", "Xp", "Xp Gained" }))));
-				downloadResult3.add(0, new UserProfileSkill(new ArrayList<String>(Arrays.asList(new String[] { "", "", "", "", "", "", "" }))));
-				downloadResult3.add(0, new UserProfileSkill(new ArrayList<String>(Arrays.asList(new String[] { "", "", "", "", "", "", "" }))));
+				downloadResult.add(0,
+						new UserProfileSkill(new ArrayList<String>(Arrays.asList(new String[] { "RT Rank", "Name", "RS Rank", "Level", "XP" }))));
+				// downloadResult3.add(0, new UserProfileSkill(new
+				// ArrayList<String>(Arrays.asList(new String[] { "", "", "",
+				// "", "", "", "" }))));
 				switcherContent.setDisplayedChild(1);
-				applyDownloadResult(downloadResult, downloadResult2, downloadResult3);
+				applyDownloadResult(downloadResult);
 			}
 		}
 	}
 
-	public void applyDownloadResult(final double[] result, final String[] result2, ArrayList<Parcelable> result3) {
-		mProgressHolder.setAdapter(new ArrayAdapter<Parcelable>(getActivity(), R.layout.history_graph, result3) {
+	public void applyDownloadResult(ArrayList<Parcelable> result) {
+		mProgressHolder.setAdapter(new ArrayAdapter<Parcelable>(getActivity(), R.layout.history_graph, result) {
 			private UserProfileBounds bounds;
 
 			@Override
@@ -203,36 +190,28 @@ public class HistoryGraphFragment extends FragmentBase {
 				if (position == 0) {
 					return 0;
 				}
-				if (position == 1) {
-					return 1;
-				}
-				if (position == 2) {
-					return 2;
-				}
-				return 3;
+				return 1;
 			}
 
 			@Override
 			public int getViewTypeCount() {
-				return 4;
+				return 2;
 			}
 
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
 				// Log.e(TAG,"Get view called for :"+position);
-				if (position == 0) {
-					return getGraphHeader(convertView);
+				if (position == 0 && convertView != null) {
+					return convertView;
 				}
-				if (position == 1) {
-					return getGraphView(convertView, result, result2);
-				}
-
 				if (convertView == null) {
 					ImageView skillIcon;
 					LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-					convertView = inflater.inflate(R.layout.progress_entry, mProgressHolder, false);
+					convertView = inflater.inflate(R.layout.runetrack_high_score_entry, mProgressHolder, false);
 					skillIcon = (ImageView) convertView.findViewById(R.id.progress_skill_image);
-					if (!((UserProfileSkill) (this.getItem(position))).mListOfItems.get(0).equals("")) {
+					if (!((UserProfileSkill) (this.getItem(position))).mListOfItems.get(0).equals("") && position != 0) {
+						String iconName = ((UserProfileSkill) this.getItem(position)).mListOfItems.get(0).toLowerCase(Locale.getDefault());
+						// Log.e(TAG,"Loading Icon: "+iconName);
 						Drawable imageIcon = getResources().getDrawable(
 								getResources().getIdentifier(
 										((UserProfileSkill) this.getItem(position)).mListOfItems.get(0).toLowerCase(Locale.getDefault()), "drawable",
@@ -254,8 +233,8 @@ public class HistoryGraphFragment extends FragmentBase {
 				for (int m = 1; m < skill.size(); m++) {
 					TextView skillName = (TextView) outVar.get(m - 1);
 					int dim = (int) ((bounds.width) / (bounds.total + 2) * (bounds.totals[m - 1]));
-					// Log.e(TAG,"M:"+m);
 					String realText = String.format("%1$" + bounds.totals[m - 1] + "s", skill.get(m));
+					// realText = realText.replace(' ', '%');
 					skillName.setText(realText);
 					// }
 					skillName.setTextSize(TypedValue.COMPLEX_UNIT_PX, bounds.textSize);
@@ -266,64 +245,4 @@ public class HistoryGraphFragment extends FragmentBase {
 
 		});
 	}
-
-	protected View getGraphHeader(View convertView) {
-		if (convertView != null) {
-			return convertView;
-		}
-
-		// LayoutInflater inflater = (LayoutInflater)
-		// getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		TextView returnView = new TextView(getActivity());
-		// LinearLayout returnView = (LinearLayout)
-		// inflater.inflate(R.layout.grid_view_holder, mProgressHolder, false);
-		returnView.setText(userName + "'s Skill History in " + skillName);
-		returnView.setGravity(Gravity.CENTER_HORIZONTAL);
-		returnView.setTextColor(Color.BLACK);
-		return returnView;
-	}
-
-	protected View getGraphView(View convertView, final double[] result, final String[] result2) {
-		if (convertView != null) {
-			return convertView;
-		}
-
-		LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-		LinearLayout returnView = (LinearLayout) inflater.inflate(R.layout.grid_view_holder, mProgressHolder, false);
-
-		final GraphView graphView = new LineGraphView(this.getActivity(), "");
-		graphView.getGraphViewStyle().setGridColor(Color.WHITE);
-		graphView.getGraphViewStyle().setHorizontalLabelsColor(Color.BLACK);
-		graphView.getGraphViewStyle().setVerticalLabelsColor(Color.BLACK);
-		graphView.getGraphViewStyle().setVerticalLabelsAlign(Align.RIGHT);
-		graphView.getGraphViewStyle().setTextSize(dpToPixals(getActivity(), 10));
-		graphView.getGraphViewStyle().setNumVerticalLabels(10);
-		graphView.setCustomLabelFormatter(new CustomLabelFormatter() {
-			@Override
-			public String formatLabel(double value, boolean isXValue) {
-				int index = (int) Math.round(value);
-				if (index >= result.length) {
-					index = result.length - 1;
-				}
-				if (isXValue) {
-					return result2[index];
-
-				} else {
-					NumberFormat formatter = NumberFormat.getNumberInstance();
-					formatter.setMaximumFractionDigits(0);
-					return formatter.format(value);
-				}
-			}
-		});
-
-		GraphViewDataInterface[] points = new GraphViewDataInterface[downloadResult.length];
-		for (int i = 0; i < downloadResult.length; i++) {
-			points[i] = new GraphViewData(i, downloadResult[i]);
-		}
-		graphView.addSeries(new GraphViewSeries(skillName, new GraphViewSeriesStyle(getResources().getColor(R.color.green_text_color),
-				dpToPixals(getActivity(), 1)), points));
-		returnView.addView(graphView);
-		return returnView;
-	}
-
 }

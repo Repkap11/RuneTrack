@@ -61,9 +61,11 @@ import android.widget.SearchView;
 import android.widget.TextView;
 
 public class MainActivity extends Activity {
-	public static final String ARG_USERNAME = "arg_username";
+	public static final String ARG_USERNAME = "ARG_USERNAME";
 	public static final String ARG_SKILL_NUMBER = "ARG_SKILL_NUMBER";
 	public static final String ARG_SKILL_NAME = "ARG_SKILL_NAME";
+	public static final String ARG_PAGE_NUMBER = "ARG_PAGE_NUMBER";
+	public static final String ARG_IS_SHOWING_HIGHSCORES = "ARG_IS_SHOWING_HIGHSCORES";
 	private DrawerLayout mDrawerLayout;
 	private ActionBarDrawerToggle mDrawerToggle;
 
@@ -73,8 +75,12 @@ public class MainActivity extends Activity {
 	private ExpandableListView mDrawerList;
 	private BaseExpandableListAdapter mAdapter;
 	public String mUserName;
+	private boolean mIsShowingHighScores = false;
 	private static final String USER_PROFILE_NAMES = "USER_PROFILE_NAMES";
 	public static final String TAG = "MainActivity";
+	public static final String DRAWER_IS_USER = "DRAWER_IS_USER";
+	public static final String DRAWER_IS_RUNETRACK_HIGH_SCORES = "DRAWER_IS_RUNETRACK_HIGH_SCORES";
+	public static final String DRAWER_IS_ADD_USER = "DRAWER_IS_ADD_USER";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -88,7 +94,7 @@ public class MainActivity extends Activity {
 		mUserNamesToShow = getStringArrayPref(prefs, USER_PROFILE_NAMES);
 		if (mUserNamesToShow.size() == 0) {
 			Log.e(TAG, "Not using saved values");
-			mUserNamesToShow = new ArrayList<String>(Arrays.asList(new String[] { "Repkap11", "Zezima","S U O M I", "Jake", "Drumgun", "Alkan" }));
+			mUserNamesToShow = new ArrayList<String>(Arrays.asList(new String[] { "Repkap11", "Zezima", "S U O M I", "Jake", "Drumgun", "Alkan" }));
 		}
 		// set a custom shadow that overlays the main content when the drawer
 		// opens
@@ -116,10 +122,14 @@ public class MainActivity extends Activity {
 				TextView view = (TextView) getLayoutInflater().inflate(R.layout.drawer_list_item, parent, false);
 				if (groupPosition == getGroupCount() - 1) {
 					view.setText("Add New User");
-					view.setTag(false);// is user
+					view.setTag(MainActivity.DRAWER_IS_ADD_USER);// is user
+				} else if (groupPosition == 0) {
+					view.setText("RuneTrack High Scores");
+					view.setTag(MainActivity.DRAWER_IS_RUNETRACK_HIGH_SCORES);// is
+																				// user
 				} else {
-					view.setText(mUserNamesToShow.get(groupPosition));
-					view.setTag(true);// is user
+					view.setText(mUserNamesToShow.get(groupPosition - 1));
+					view.setTag(MainActivity.DRAWER_IS_USER);// is user
 				}
 
 				return view;
@@ -132,17 +142,15 @@ public class MainActivity extends Activity {
 
 			@Override
 			public int getGroupCount() {
-				return mUserNamesToShow.size() + 1;
-			}
-
-			@Override
-			public Object getGroup(int groupPosition) {
-				return null;
+				return mUserNamesToShow.size() + 2;// 1 for RuneTrack highscores
+													// 1 for add user
 			}
 
 			@Override
 			public int getChildrenCount(int groupPosition) {
 				if (groupPosition == getGroupCount() - 1) {
+					return 0;
+				} else if (groupPosition == 0) {
 					return 0;
 				} else {
 					return 2;
@@ -153,11 +161,16 @@ public class MainActivity extends Activity {
 			public View getChildView(int groupPosition, int childPosition, boolean isLastChild, View convertView, ViewGroup parent) {
 				// Log.e(TAG, "Getting view " + position);
 				if (convertView == null) {
-					convertView  =  getLayoutInflater().inflate(R.layout.drawer_list_sub_item, parent, false);
+					convertView = getLayoutInflater().inflate(R.layout.drawer_list_sub_item, parent, false);
 				}
 				TextView view = (TextView) convertView.findViewById(R.id.drawer_list_sub_item_textview);
-				view.setText(childPosition == 0 ? "     User Profile":"      Weekly Xp Distribution");
+				view.setText(childPosition == 0 ? "     User Profile" : "      Weekly Xp Distribution");
 				return view;
+			}
+
+			@Override
+			public Object getChild(int groupPosition, int childPosition) {
+				return null;
 			}
 
 			@Override
@@ -166,7 +179,7 @@ public class MainActivity extends Activity {
 			}
 
 			@Override
-			public Object getChild(int groupPosition, int childPosition) {
+			public Object getGroup(int groupPosition) {
 				return null;
 			}
 		};
@@ -206,20 +219,26 @@ public class MainActivity extends Activity {
 		mDrawerLayout.setDrawerListener(mDrawerToggle);
 
 		if (savedInstanceState == null) {
-			//TODO what fragment to initialize to 
+			// TODO what fragment to initialize to
+
 			mUserName = mUserNamesToShow.get(0);
 			selectUserProfileByName(mUserName);
-			//selectHitsoryGraph(mUserName, 0, "Overall");
-			//selectPiChart(mUserName);
+			// selectHitsoryGraph(mUserName, 0, "Overall");
+			// selectPiChart(mUserName);
+
+			// mIsShowingHighScores = true;
+			// selectRuneTrackHighScores("Overall", 1);
 		} else {
 			// Fragment will take care of most of the state...
 			mUserName = savedInstanceState.getString(ARG_USERNAME);
+			mIsShowingHighScores = savedInstanceState.getBoolean(ARG_IS_SHOWING_HIGHSCORES, mIsShowingHighScores);
 
 		}
 	}
 
 	@Override
 	protected void onSaveInstanceState(Bundle outState) {
+		outState.putBoolean(ARG_IS_SHOWING_HIGHSCORES, mIsShowingHighScores);
 		outState.putString(ARG_USERNAME, mUserName);
 		super.onSaveInstanceState(outState);
 	}
@@ -333,7 +352,11 @@ public class MainActivity extends Activity {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int result = item.getNumericShortcut() - 'a';
 		if (result != -97) {
-			selectHitsoryGraph(mUserName, result, (String) item.getTitle());
+			if (mIsShowingHighScores) {
+				selectRuneTrackHighScores((String) item.getTitle(), 1);
+			} else {
+				selectHitsoryGraph(mUserName, result, (String) item.getTitle());
+			}
 		}
 
 		// The action bar home/up action should open or close the drawer.
@@ -358,8 +381,10 @@ public class MainActivity extends Activity {
 		public boolean onGroupClick(ExpandableListView parent, View view, int groupPosition, long id) {
 			Log.e(TAG, "onGroupClick called");
 			if (view.getTag() != null) {
-				if (view.getTag().equals(true)) {
+				if (view.getTag().equals(DRAWER_IS_USER)) {
 					return false;
+				} else if (view.getTag().equals(DRAWER_IS_RUNETRACK_HIGH_SCORES)) {
+					selectRuneTrackHighScores("Overall", 1);
 				} else {
 					AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
 					builder.setTitle("Enter Username");
@@ -396,11 +421,18 @@ public class MainActivity extends Activity {
 		@Override
 		public boolean onChildClick(ExpandableListView parent, View view, int groupPosition, int childPosition, long id) {
 			Log.e(TAG, "onChildClick called:" + groupPosition + ":" + childPosition);
+			int selectPosition = groupPosition - 1;
 			if (childPosition == 0) {
-				selectUserProfileByName(mUserNamesToShow.get(groupPosition));
+				selectUserProfileByName(mUserNamesToShow.get(selectPosition));// -1
+																				// for
+																				// runetrack
+																				// high
+																				// scores
+																				// being
+																				// first
 			}
 			if (childPosition == 1) {
-				selectPiChart(mUserNamesToShow.get(groupPosition));
+				selectPiChart(mUserNamesToShow.get(selectPosition));
 			}
 			return true;
 
@@ -411,26 +443,27 @@ public class MainActivity extends Activity {
 
 		@Override
 		public boolean onItemLongClick(AdapterView<?> arg0, View view, final int position, long dontknow) {
-			//Log.e(TAG, "onGroupLongClick called");
+			// Log.e(TAG, "onGroupLongClick called");
 			if (view.getTag() != null) {
-				if (view.getTag().equals(true)) {
-					final long packedPosition =  mDrawerList.getExpandableListPosition(position);
-					final int groupPosition = ExpandableListView.getPackedPositionGroup(packedPosition);
+				if (view.getTag().equals(MainActivity.DRAWER_IS_USER)) {
+					final long packedPosition = mDrawerList.getExpandableListPosition(position);
+					final int selectPosition = ExpandableListView.getPackedPositionGroup(packedPosition) - 1;// for
+																												// highscores
 					AlertDialog.Builder adb = new AlertDialog.Builder(MainActivity.this);
 					adb.setTitle("Delete User?");
-					Log.e(TAG,"groupPosition:"+groupPosition);
-					adb.setMessage("Are you sure you want to remove\n" + mUserNamesToShow.get(groupPosition));
+					Log.e(TAG, "selectPosition:" + selectPosition);
+					adb.setMessage("Are you sure you want to remove\n" + mUserNamesToShow.get(selectPosition));
 					adb.setPositiveButton("Yes", new AlertDialog.OnClickListener() {
 						public void onClick(DialogInterface dialog, int which) {
-							mUserNamesToShow.remove(groupPosition);
-							 mAdapter.notifyDataSetChanged();
+							mUserNamesToShow.remove(selectPosition);
+							mAdapter.notifyDataSetChanged();
 							savePreferences();
 						}
 					});
 					adb.setNegativeButton("No", null);
 					adb.show();
 					return true;
-				} else {
+				} else {// is add user or highscores
 					return false;
 				}
 			} else {
@@ -440,6 +473,7 @@ public class MainActivity extends Activity {
 	}
 
 	void selectUserProfileByName(String userName) {
+		mIsShowingHighScores = false;
 		mUserName = userName;
 		// update the main content by replacing fragments
 		Fragment fragment = new UserProfileFragment();
@@ -456,10 +490,24 @@ public class MainActivity extends Activity {
 		mDrawerLayout.closeDrawer(mDrawerList);
 	}
 
-	/**
-	 * @param string
-	 */
+	public void selectRuneTrackHighScores(String skillName, int pageNumber) {
+		mIsShowingHighScores = true;
+		Log.e(TAG, "Selecting highscores for:" + skillName + " page #" + pageNumber);
+		Fragment fragment = new RuneTrackHighScoresFragment();
+		Bundle args = new Bundle();
+
+		args.putInt(ARG_PAGE_NUMBER, pageNumber);
+		args.putString(ARG_SKILL_NAME, skillName);
+
+		fragment.setArguments(args);
+		FragmentManager fragmentManager = getFragmentManager();
+		fragmentManager.beginTransaction().replace(R.id.content_frame, fragment, "RuneTrackHighScores").commit();
+		setTitle("RuneTrack HighScores");
+		mDrawerLayout.closeDrawer(mDrawerList);
+	}
+
 	public void selectPiChart(String userName) {
+		mIsShowingHighScores = false;
 		mUserName = userName;
 		Log.e(TAG, "Selecting pi chart for:" + userName);
 		Fragment fragment = new XpDistributionChartFragment();
@@ -475,6 +523,7 @@ public class MainActivity extends Activity {
 	}
 
 	void selectHitsoryGraph(String userName, int skillNumber, String skillName) {
+		mIsShowingHighScores = false;
 		// update the main content by replacing fragments
 		Fragment fragment = new HistoryGraphFragment();
 		Bundle args = new Bundle();

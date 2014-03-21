@@ -47,6 +47,9 @@ public class DownloadIntentService extends IntentService {
 	public static final String PARAM_PROGRESS_ENTRIES = "PARAM_PROGRESS_ENTRIES";
 	private static final String TAG = "DownloadIntentService";
 	public static final String PARAM_SKILL_NAME = "PARAM_SKILL_NAME";
+	public static final String PARAM_PAGE_NUMBER = "PARAM_PAGE_NUMBER";
+	public static final String PARAM_RUNETRACK_HIGH_SCORES = "PARAM_RUNETRACK_HIGH_SCORES";
+	public static final String PARAM_HIGH_SCORES_ENTRIES = "PARAM_HIGH_SCORES_ENTRIES";
 
 	/**
 	 * @param name
@@ -65,12 +68,51 @@ public class DownloadIntentService extends IntentService {
 			doHistoryGraph(intent);
 		} else if (whichData.equals(PARAM_XP_PI_CHART)) {
 			doXpPiChart(intent);
+		} else if (whichData.equals(PARAM_RUNETRACK_HIGH_SCORES)) {
+			doRuneTrackHighScores(intent);
 		}
 	}
 
-	/**
-	 * @param intent
-	 */
+	private void doRuneTrackHighScores(Intent intent) {
+		String skillName = intent.getStringExtra(PARAM_SKILL_NAME);
+		int pageNumber = intent.getIntExtra(PARAM_PAGE_NUMBER, 0);
+		ArrayList<UserProfileSkill> userEntries = new ArrayList<UserProfileSkill>();
+
+		try {
+			Connection c = Jsoup.connect("http://runetrack.com/high_scores.php?skill=" + skillName + "&page=" + pageNumber);
+			c.timeout(TIMEOUT);
+			Document d = c.get();
+			Element e = d.body();
+			Log.e(TAG, "Downloading done " + skillName);
+
+			Element ele = d.getElementsByClass("profile_table").get(1).child(0);
+			// Log.e(TAG,"ele:"+ele.text());
+			for (int i = 2; i < ele.children().size(); i++) {
+				// Log.e(TAG,"Loop iteration "+i);
+				Element skill = ele.child(i);
+				// String skillName =
+				// skill.child(0).child(0).attr("alt").replace(String.valueOf((char)
+				// 160), "");
+				String userName = skill.child(1).text().replace(String.valueOf((char) 160), "");
+				String rsRank = skill.child(2).text().replace(String.valueOf((char) 160), "");
+				String level = skill.child(3).text().replace(String.valueOf((char) 160), "");
+				String xp = skill.child(4).text().replace(String.valueOf((char) 160), "");
+				userEntries.add(new UserProfileSkill(new ArrayList<String>(Arrays.asList(new String[] { skillName, userName, rsRank, level, xp }))));
+			}
+
+		} catch (Exception e) {
+			userEntries = null;
+			e.printStackTrace();
+			Log.e(TAG, "Caught exception downloading, highscores is empty");
+
+		}
+		Intent broadcastIntent = new Intent();
+		broadcastIntent.setAction(PARAM_USERNAME);
+		broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
+		broadcastIntent.putExtra(PARAM_HIGH_SCORES_ENTRIES, userEntries);
+		sendBroadcast(broadcastIntent);
+	}
+
 	private void doXpPiChart(Intent intent) {
 		int[] colors;
 		int[] xpPerSkill;
@@ -139,9 +181,6 @@ public class DownloadIntentService extends IntentService {
 		sendBroadcast(broadcastIntent);
 	}
 
-	/**
-	 * @param intent
-	 */
 	private void doHistoryGraph(Intent intent) {
 		Intent broadcastIntent = doGraphParseing(intent);
 		doProgressEntries(intent, broadcastIntent);
@@ -157,8 +196,10 @@ public class DownloadIntentService extends IntentService {
 			e1.printStackTrace();
 		}
 		try {
-			Connection c = Jsoup.connect("http://runetrack.com/progress.php?user=" + userName+"&skill="+skillName);
-			//Connection c = Jsoup.connect("http://runetrack.com/progress.php?user=" + userName+"&skill="+skillName+"&view=all#more");
+			Connection c = Jsoup.connect("http://runetrack.com/progress.php?user=" + userName + "&skill=" + skillName);
+			// Connection c =
+			// Jsoup.connect("http://runetrack.com/progress.php?user=" +
+			// userName+"&skill="+skillName+"&view=all#more");
 			c.timeout(TIMEOUT);
 			Document d = c.get();
 			Log.e(TAG, "Downloading done " + userName);
@@ -173,7 +214,7 @@ public class DownloadIntentService extends IntentService {
 				String skillName2 = dayEntry.child(0).child(0).attr("title").replace(String.valueOf((char) 160), "");
 				// Log.e(TAG,"skillName:"+skillName);
 				String dayNumber = dayEntry.child(0).text().replace(String.valueOf((char) 160), "");
-				//Log.e(TAG, "dayNumber:" + dayNumber);
+				// Log.e(TAG, "dayNumber:" + dayNumber);
 				String date = dayEntry.child(1).text().replace(String.valueOf((char) 160), "");
 				String rank = dayEntry.child(2).text().replace(String.valueOf((char) 160), "");
 				String level = dayEntry.child(3).text().replace(String.valueOf((char) 160), "");

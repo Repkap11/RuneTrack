@@ -35,7 +35,7 @@ import android.widget.*;
 /**
  * Fragment that appears in the "content_frame", shows a planet
  */
-public class UserProfileFragment extends Fragment {
+public class UserProfileFragment extends FragmentBase {
 
 	private static final String TAG = "UserProfileFragment";
 
@@ -256,66 +256,5 @@ public class UserProfileFragment extends Fragment {
 				return returnView;
 			}
 		});
-	}
-
-	public static UserProfileBounds calculateLayoutSize(ArrayAdapter<Parcelable> arrayAdapter, Context context, ListView view) {
-		// Log.e(TAG, "Calculating Bounds");
-		Display d = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
-		Point p = new Point();
-		d.getSize(p);
-		int oldwidth = p.x;
-		int width = oldwidth - view.getPaddingLeft() - view.getPaddingRight() - ((ViewGroup.MarginLayoutParams) view.getLayoutParams()).leftMargin
-				- ((ViewGroup.MarginLayoutParams) view.getLayoutParams()).rightMargin;
-		// Toast.makeText(UserProfileFragment.this.getActivity(),"old:"+oldwidth+" new:"+width,Toast.LENGTH_SHORT).show();
-		int total = 0;
-		int[] totals = new int[((UserProfileSkill) arrayAdapter.getItem(0)).mListOfItems.size() - 1];
-		for (int i = 1; i < totals.length + 1; i++) {
-			int max = 0;
-			for (int j = 0; j < arrayAdapter.getCount(); j++) {
-				int curSize = ((UserProfileSkill) arrayAdapter.getItem(j)).mListOfItems.get(i).length();
-				if (max < curSize) {
-					max = curSize;
-				}
-			}
-
-			totals[i - 1] = max + 1;// +1 for padding text with a space
-			//Log.e(TAG,"Totals["+(i-1)+"] = "+totals[i-1]);
-			total += max + 1;
-		}
-		// Log.e(TAG,"Total"+" = "+total);
-		int imageSize = (int) ((width) / (total + 2) * 2);// image takes
-															// two
-															// spaces
-															// worth of
-															// size
-		float textSize = refitText(" ", (width) / (total + 2) * 1);
-		return new UserProfileBounds(imageSize, totals, total, width, textSize);
-	}
-
-	public static float refitText(String text, int textWidth) {
-		if (textWidth <= 0)
-			return 0;
-		float hi = 100;
-		float lo = 2;
-		final float threshold = 0.5f; // How close we have to be
-		Paint testPaint = new Paint();
-
-		while ((hi - lo) > threshold) {
-			float size = (hi + lo) / 2;
-			testPaint.setTextSize(size);
-			testPaint.setTypeface(Typeface.MONOSPACE);
-			if (testPaint.measureText(text) >= textWidth)
-				hi = size; // too big
-			else
-				lo = size; // too small
-		}
-		// Use lo so that we undershoot rather than overshoot
-		return lo;
-	}
-
-	public static int dpToPixals(Context context,int dp) {
-		float scale = context.getResources().getDisplayMetrics().density;
-		int dpAsPixels = (int) (dp * scale + 0.5f);
-		return dpAsPixels;
 	}
 }
