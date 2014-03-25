@@ -4,7 +4,7 @@
  * $Log:$
  * @author Paul Repka psr2608
  */
-package com.repkap11.runetrack;
+package com.repkap11.runetrack.fragments;
 
 import android.app.Fragment;
 import android.content.Context;
@@ -12,17 +12,19 @@ import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.os.Parcelable;
-import android.util.Log;
 import android.view.Display;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 
+import com.repkap11.runetrack.DataTable;
+import com.repkap11.runetrack.DataTableBounds;
+
 public class FragmentBase extends Fragment {
 	private static final String TAG = "FragmentBase";
 
-	public static UserProfileBounds calculateLayoutSize(ArrayAdapter<Parcelable> arrayAdapter, Context context, ListView view) {
+	public static DataTableBounds calculateLayoutSize(ArrayAdapter<Parcelable> arrayAdapter, Context context, ListView view) {
 		// Log.e(TAG, "Calculating Bounds");
 		Display d = ((WindowManager) context.getSystemService(Context.WINDOW_SERVICE)).getDefaultDisplay();
 		Point p = new Point();
@@ -30,31 +32,31 @@ public class FragmentBase extends Fragment {
 		int oldwidth = p.x;
 		int width = oldwidth - view.getPaddingLeft() - view.getPaddingRight() - ((ViewGroup.MarginLayoutParams) view.getLayoutParams()).leftMargin
 				- ((ViewGroup.MarginLayoutParams) view.getLayoutParams()).rightMargin;
-		//Log.e(TAG, "old:" + oldwidth + " new:" + width);
+		// Log.e(TAG, "old:" + oldwidth + " new:" + width);
 		int total = 0;
-		int[] totals = new int[((UserProfileSkill) arrayAdapter.getItem(0)).mListOfItems.size() - 1];
+		int[] totals = new int[((DataTable) arrayAdapter.getItem(0)).mListOfItems.size() - 1];
 		for (int i = 1; i < totals.length + 1; i++) {
 			int max = 0;
 			for (int j = 0; j < arrayAdapter.getCount(); j++) {
-				int curSize = ((UserProfileSkill) arrayAdapter.getItem(j)).mListOfItems.get(i).length();
+				int curSize = ((DataTable) arrayAdapter.getItem(j)).mListOfItems.get(i).length();
 				if (max < curSize) {
 					max = curSize;
 				}
 			}
 
 			totals[i - 1] = max + 1;// +1 for padding text with a space
-			//Log.e(TAG, "Totals[" + (i - 1) + "] = " + totals[i - 1]);
+			// Log.e(TAG, "Totals[" + (i - 1) + "] = " + totals[i - 1]);
 			total += max + 1;
 		}
-		//Log.e(TAG, "Total" + " = " + total);
+		// Log.e(TAG, "Total" + " = " + total);
 		int imageSize = (int) ((width) / (total + 2) * 2);// image takes
 															// two
 															// spaces
 															// worth of
 															// size
 		float textSize = refitText(" ", (width) / (total + 2) * 1);
-		//Log.e(TAG, "textSize" + " = " +textSize);
-		return new UserProfileBounds(imageSize, totals, total, width, textSize);
+		// Log.e(TAG, "textSize" + " = " +textSize);
+		return new DataTableBounds(imageSize, totals, total, width, textSize);
 	}
 
 	public static float refitText(String text, int textWidth) {

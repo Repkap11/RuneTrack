@@ -76,13 +76,12 @@ public class DownloadIntentService extends IntentService {
 	private void doRuneTrackHighScores(Intent intent) {
 		String skillName = intent.getStringExtra(PARAM_SKILL_NAME);
 		int pageNumber = intent.getIntExtra(PARAM_PAGE_NUMBER, 0);
-		ArrayList<UserProfileSkill> userEntries = new ArrayList<UserProfileSkill>();
+		ArrayList<DataTable> userEntries = new ArrayList<DataTable>();
 
 		try {
 			Connection c = Jsoup.connect("http://runetrack.com/high_scores.php?skill=" + skillName + "&page=" + pageNumber);
 			c.timeout(TIMEOUT);
 			Document d = c.get();
-			Element e = d.body();
 			Log.e(TAG, "Downloading done " + skillName);
 
 			Element ele = d.getElementsByClass("profile_table").get(1).child(0);
@@ -97,7 +96,7 @@ public class DownloadIntentService extends IntentService {
 				String rsRank = skill.child(2).text().replace(String.valueOf((char) 160), "");
 				String level = skill.child(3).text().replace(String.valueOf((char) 160), "");
 				String xp = skill.child(4).text().replace(String.valueOf((char) 160), "");
-				userEntries.add(new UserProfileSkill(new ArrayList<String>(Arrays.asList(new String[] { skillName, userName, rsRank, level, xp }))));
+				userEntries.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[] { skillName, userName, rsRank, level, xp }))));
 			}
 
 		} catch (Exception e) {
@@ -147,13 +146,13 @@ public class DownloadIntentService extends IntentService {
 														// means userGainedNoXp
 														// = true;
 			skillNames = new String[degreesArray.length()];
-			long totalxp = 0;
+			// long totalxp = 0;
 			for (int i = 0; i < degreesArray.length(); i++) {
 				String skillName = degreesArray.getJSONObject(i).getString("label");
 				skillNames[i] = skillName;
 				int xp = degreesArray.getJSONObject(i).getInt("value");
 				xpPerSkill[i] = xp;
-				totalxp += xp;
+				// totalxp += xp;
 			}
 			JSONArray colorsArray = temp2.getJSONArray("colours");
 			colors = new int[colorsArray.length()];
@@ -196,10 +195,10 @@ public class DownloadIntentService extends IntentService {
 			e1.printStackTrace();
 		}
 		try {
-			Connection c = Jsoup.connect("http://runetrack.com/progress.php?user=" + userName + "&skill=" + skillName);
 			// Connection c =
 			// Jsoup.connect("http://runetrack.com/progress.php?user=" +
-			// userName+"&skill="+skillName+"&view=all#more");
+			// userName + "&skill=" + skillName);
+			Connection c = Jsoup.connect("http://runetrack.com/progress.php?user=" + userName + "&skill=" + skillName + "&view=all#more");
 			c.timeout(TIMEOUT);
 			Document d = c.get();
 			Log.e(TAG, "Downloading done " + userName);
@@ -220,8 +219,8 @@ public class DownloadIntentService extends IntentService {
 				String level = dayEntry.child(3).text().replace(String.valueOf((char) 160), "");
 				String xp = dayEntry.child(4).text().replace(String.valueOf((char) 160), "");
 				String xpgained = dayEntry.child(5).text().replace(String.valueOf((char) 160), "");
-				entries.add(new UserProfileSkill(new ArrayList<String>(Arrays.asList(new String[] { skillName2, dayNumber, date, rank, level, xp,
-						xpgained }))));
+				entries.add(new DataTable(new ArrayList<String>(Arrays
+						.asList(new String[] { skillName2, dayNumber, date, rank, level, xp, xpgained }))));
 			}
 
 		} catch (Exception e) {
@@ -285,7 +284,7 @@ public class DownloadIntentService extends IntentService {
 
 	private void doUserProfileTable(Intent intent) {
 		String userName = intent.getStringExtra(PARAM_USERNAME);
-		ArrayList<UserProfileSkill> skills = new ArrayList<UserProfileSkill>();
+		ArrayList<DataTable> skills = new ArrayList<DataTable>();
 		try {
 			userName = URLEncoder.encode(userName, Charset.defaultCharset().name());
 		} catch (UnsupportedEncodingException e1) {
@@ -309,13 +308,13 @@ public class DownloadIntentService extends IntentService {
 				String todayxp = skill.child(5).text().replace(String.valueOf((char) 160), "");
 				String weekLevel = skill.child(6).text().replace(String.valueOf((char) 160), "");
 				String weekxp = skill.child(7).text().replace(String.valueOf((char) 160), "");
-				skills.add(new UserProfileSkill(new ArrayList(Arrays.asList(new String[] { skillName, level, xp, rank, todayLevel, todayxp,
+				skills.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[] { skillName, level, xp, rank, todayLevel, todayxp,
 						weekLevel, weekxp }))));
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 			Log.e(TAG, "Caught exception downloading, settings skills to empty");
-			skills = new ArrayList<UserProfileSkill>();
+			skills = new ArrayList<DataTable>();
 		}
 		Intent broadcastIntent = new Intent();
 		broadcastIntent.setAction(PARAM_USERNAME);

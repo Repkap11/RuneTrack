@@ -4,12 +4,11 @@ import java.util.ArrayList;
 
 import android.os.Parcel;
 import android.os.Parcelable;
-import android.util.Log;
 
-public class UserProfileSkill implements Parcelable {
+public class DataTable implements Parcelable {
 	public ArrayList<String> mListOfItems;
 
-	public UserProfileSkill(ArrayList<String> items) {
+	public DataTable(ArrayList<String> items) {
 		this.mListOfItems = items;
 	}
 
@@ -23,18 +22,18 @@ public class UserProfileSkill implements Parcelable {
 		out.writeStringList(mListOfItems);
 	}
 
-	public static final Parcelable.Creator<UserProfileSkill> CREATOR = new Parcelable.Creator<UserProfileSkill>() {
-		public UserProfileSkill createFromParcel(Parcel in) {
-			return new UserProfileSkill(in);
+	public static final Parcelable.Creator<DataTable> CREATOR = new Parcelable.Creator<DataTable>() {
+		public DataTable createFromParcel(Parcel in) {
+			return new DataTable(in);
 		}
 
 		@Override
-		public UserProfileSkill[] newArray(int size) {
-			return new UserProfileSkill[size];
+		public DataTable[] newArray(int size) {
+			return new DataTable[size];
 		}
 	};
 
-	private UserProfileSkill(Parcel in) {
+	private DataTable(Parcel in) {
 		if (in == null) {
 		} else {
 			// Log.e("Paul","In is not null");

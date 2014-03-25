@@ -4,17 +4,13 @@
  * $Log:$
  * @author Paul Repka psr2608
  */
-package com.repkap11.runetrack;
-
-import java.text.NumberFormat;
+package com.repkap11.runetrack.fragments;
 
 import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
-import android.graphics.Paint.Align;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -24,17 +20,11 @@ import android.view.ViewGroup;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
-import com.jjoe64.graphview.CustomLabelFormatter;
-import com.jjoe64.graphview.GraphView;
-import com.jjoe64.graphview.GraphView.GraphViewData;
-import com.jjoe64.graphview.GraphViewDataInterface;
-import com.jjoe64.graphview.GraphViewSeries;
-import com.jjoe64.graphview.GraphViewSeries.GraphViewSeriesStyle;
-import com.jjoe64.graphview.LineGraphView;
+import com.repkap11.runetrack.DownloadIntentService;
+import com.repkap11.runetrack.MainActivity;
+import com.repkap11.runetrack.PiChart;
+import com.repkap11.runetrack.R;
 
-/**
- * Fragment that appears in the "content_frame", shows a planet
- */
 public class XpDistributionChartFragment extends Fragment {
 
 	public static final String TAG = " XpDistributionChartFragment";
@@ -56,7 +46,6 @@ public class XpDistributionChartFragment extends Fragment {
 	private ViewSwitcher switcherContent;
 	private TextView failureRetryButton;
 	private int skillNumber;
-	private String skillName;
 	private String[] downloadResult3;
 	private ViewSwitcher switcherUserGainedNoXP;
 	private boolean needsToShowUserGainedNoXP;
@@ -207,11 +196,4 @@ public class XpDistributionChartFragment extends Fragment {
 		mPiChart.setPiChartData(downloadResult4, downloadResult2, downloadResult3);
 
 	}
-
-	private int dpToPixals(int dp) {
-		float scale = getResources().getDisplayMetrics().density;
-		int dpAsPixels = (int) (dp * scale + 0.5f);
-		return dpAsPixels;
-	}
-
 }

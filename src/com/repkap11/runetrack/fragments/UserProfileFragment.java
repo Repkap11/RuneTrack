@@ -4,46 +4,40 @@
  * $Log:$
  * @author Paul Repka psr2608
  */
-package com.repkap11.runetrack;
+package com.repkap11.runetrack.fragments;
 
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 
-import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Paint;
-import android.graphics.Point;
-import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.DisplayMetrics;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.Display;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.WindowManager;
-import android.widget.*;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
-/**
- * Fragment that appears in the "content_frame", shows a planet
- */
+import com.repkap11.runetrack.DataTable;
+import com.repkap11.runetrack.DataTableBounds;
+import com.repkap11.runetrack.DownloadIntentService;
+import com.repkap11.runetrack.MainActivity;
+import com.repkap11.runetrack.R;
+
 public class UserProfileFragment extends FragmentBase {
 
 	private static final String TAG = "UserProfileFragment";
-
-	@Override
-	public void onDetach() {
-		Log.e(TAG, "Fragment Detached");
-		super.onDetach();
-	}
 
 	private ListView mList;
 	private ResponseReceiver receiver;
@@ -65,15 +59,33 @@ public class UserProfileFragment extends FragmentBase {
 	}
 
 	@Override
-	public void onPause() {
-		super.onPause();
-		if (receiver != null) {
-			getActivity().unregisterReceiver(receiver);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+		View rootView = inflater.inflate(R.layout.user_profile, container, false);
+		failureRetryButton = (TextView) rootView.findViewById(R.id.user_profile_error_message);
+		failureRetryButton.setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				failureRetryOnClick(v);
+			}
+		});
+		switcherContent = (ViewSwitcher) rootView.findViewById(R.id.switcher_loading_content);
+		switcherFailure = (ViewSwitcher) rootView.findViewById(R.id.switcher_loading_failure);
+		userName = getArguments().getString(MainActivity.ARG_USERNAME);
+		mList = ((ListView) rootView.findViewById(R.id.user_profile_content));
+		getActivity().setTitle(userName);
+		needsDownload = true;
+	
+		if (savedInstanceState != null) {
+	
+			needsToShowDownloadFailure = savedInstanceState.getBoolean("needsToShowDownloadFailure");
+			Log.e(TAG, "needsToShowDownloadFailure updated from state : " + needsToShowDownloadFailure);
+			downloadResult = savedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_USERNAME);
+			if (downloadResult != null) {
+				needsDownload = false;
+				applyDownloadResult(downloadResult);
+			}
 		}
-	}
-
-	private void failureRetryOnClick(View v) {
-		((MainActivity) this.getActivity()).selectUserProfileByName(userName);
+		return rootView;
 	}
 
 	@Override
@@ -92,9 +104,9 @@ public class UserProfileFragment extends FragmentBase {
 			filter.addCategory(Intent.CATEGORY_DEFAULT);
 			receiver = new ResponseReceiver();
 			getActivity().registerReceiver(receiver, filter);
-
+	
 		} else {
-
+	
 			if (needsToShowDownloadFailure) {
 				switcherContent.setDisplayedChild(0);
 				switcherFailure.setDisplayedChild(1);
@@ -104,6 +116,10 @@ public class UserProfileFragment extends FragmentBase {
 		}
 	}
 
+	private void failureRetryOnClick(View v) {
+		((MainActivity) this.getActivity()).selectUserProfileByName(userName);
+	}
+
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
 		super.onSaveInstanceState(outState);
@@ -111,36 +127,6 @@ public class UserProfileFragment extends FragmentBase {
 			outState.putParcelableArrayList(DownloadIntentService.PARAM_USERNAME, downloadResult);
 			outState.putBoolean("needsToShowDownloadFailure", needsToShowDownloadFailure);
 		}
-	}
-
-	@Override
-	public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-		View rootView = inflater.inflate(R.layout.user_profile, container, false);
-		failureRetryButton = (TextView) rootView.findViewById(R.id.user_profile_error_message);
-		failureRetryButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				failureRetryOnClick(v);
-			}
-		});
-		switcherContent = (ViewSwitcher) rootView.findViewById(R.id.switcher_loading_content);
-		switcherFailure = (ViewSwitcher) rootView.findViewById(R.id.switcher_loading_failure);
-		userName = getArguments().getString(MainActivity.ARG_USERNAME);
-		mList = ((ListView) rootView.findViewById(R.id.user_profile_content));
-		getActivity().setTitle(userName);
-		needsDownload = true;
-
-		if (savedInstanceState != null) {
-
-			needsToShowDownloadFailure = savedInstanceState.getBoolean("needsToShowDownloadFailure");
-			Log.e(TAG, "needsToShowDownloadFailure updated from state : " + needsToShowDownloadFailure);
-			downloadResult = savedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_USERNAME);
-			if (downloadResult != null) {
-				needsDownload = false;
-				applyDownloadResult(downloadResult);
-			}
-		}
-		return rootView;
 	}
 
 	public class ResponseReceiver extends BroadcastReceiver {
@@ -155,9 +141,9 @@ public class UserProfileFragment extends FragmentBase {
 				// Toast.makeText(UserProfileFragment.this.getActivity(),
 				// "Failure", Toast.LENGTH_SHORT).show();
 			} else {
-				UserProfileSkill topHeader = new UserProfileSkill(new ArrayList<String>(Arrays.asList(new String[] { "", "Curnt ", "Runescape",
+				DataTable topHeader = new DataTable(new ArrayList<String>(Arrays.asList(new String[] { "", "Curnt ", "Runescape",
 						"Stats", "Today", "", "This", "Week" })));
-				UserProfileSkill header = new UserProfileSkill(new ArrayList<String>(Arrays.asList(new String[] { "", "Level", "Xp", "Rank", "Lvls",
+				DataTable header = new DataTable(new ArrayList<String>(Arrays.asList(new String[] { "", "Level", "Xp", "Rank", "Lvls",
 						"Xp", "Lvls", "Xp" })));
 				downloadResult.add(0, topHeader);
 				downloadResult.add(1, header);
@@ -176,7 +162,7 @@ public class UserProfileFragment extends FragmentBase {
 			Log.e(TAG, "All good, neither null");
 		}
 		mList.setAdapter(new ArrayAdapter<Parcelable>(this.getActivity(), R.layout.user_profile_holder, result) {
-			private UserProfileBounds bounds;
+			private DataTableBounds bounds;
 
 			@Override
 			public View getView(int position, View convertView, ViewGroup parent) {
@@ -196,11 +182,11 @@ public class UserProfileFragment extends FragmentBase {
 				skillIcon = (ImageView) returnView.findViewById(R.id.user_profile_skill_image);
 				if (bounds == null)
 					bounds = calculateLayoutSize(this, getActivity(), (ListView) parent);
-				ArrayList<String> skill = ((UserProfileSkill) this.getItem(position)).mListOfItems;
-				if (!((UserProfileSkill) this.getItem(position)).mListOfItems.get(0).equals("")) {
+				ArrayList<String> skill = ((DataTable) this.getItem(position)).mListOfItems;
+				if (!((DataTable) this.getItem(position)).mListOfItems.get(0).equals("")) {
 					Drawable imageIcon = getResources().getDrawable(
 							getResources().getIdentifier(
-									((UserProfileSkill) this.getItem(position)).mListOfItems.get(0).toLowerCase(Locale.getDefault()), "drawable",
+									((DataTable) this.getItem(position)).mListOfItems.get(0).toLowerCase(Locale.getDefault()), "drawable",
 									getActivity().getPackageName()));
 					skillIcon.setImageDrawable(imageIcon);
 				} else {
@@ -256,5 +242,19 @@ public class UserProfileFragment extends FragmentBase {
 				return returnView;
 			}
 		});
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+		if (receiver != null) {
+			getActivity().unregisterReceiver(receiver);
+		}
+	}
+
+	@Override
+	public void onDetach() {
+		Log.e(TAG, "Fragment Detached");
+		super.onDetach();
 	}
 }

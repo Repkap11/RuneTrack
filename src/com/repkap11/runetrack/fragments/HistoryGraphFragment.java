@@ -4,14 +4,13 @@
  * $Log:$
  * @author Paul Repka psr2608
  */
-package com.repkap11.runetrack;
+package com.repkap11.runetrack.fragments;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 
-import android.app.Fragment;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -42,6 +41,11 @@ import com.jjoe64.graphview.GraphViewDataInterface;
 import com.jjoe64.graphview.GraphViewSeries;
 import com.jjoe64.graphview.GraphViewSeries.GraphViewSeriesStyle;
 import com.jjoe64.graphview.LineGraphView;
+import com.repkap11.runetrack.DataTable;
+import com.repkap11.runetrack.DataTableBounds;
+import com.repkap11.runetrack.DownloadIntentService;
+import com.repkap11.runetrack.MainActivity;
+import com.repkap11.runetrack.R;
 
 /**
  * Fragment that appears in the "content_frame", shows a planet
@@ -184,10 +188,10 @@ public class HistoryGraphFragment extends FragmentBase {
 			} else {
 				downloadResult3.add(
 						0,
-						new UserProfileSkill(new ArrayList<String>(Arrays
+						new DataTable(new ArrayList<String>(Arrays
 								.asList(new String[] { "", "#", "Date", "Rank", "Level", "Xp", "Xp Gained" }))));
-				downloadResult3.add(0, new UserProfileSkill(new ArrayList<String>(Arrays.asList(new String[] { "", "", "", "", "", "", "" }))));
-				downloadResult3.add(0, new UserProfileSkill(new ArrayList<String>(Arrays.asList(new String[] { "", "", "", "", "", "", "" }))));
+				downloadResult3.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[] { "", "", "", "", "", "", "" }))));
+				downloadResult3.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[] { "", "", "", "", "", "", "" }))));
 				switcherContent.setDisplayedChild(1);
 				applyDownloadResult(downloadResult, downloadResult2, downloadResult3);
 			}
@@ -196,7 +200,7 @@ public class HistoryGraphFragment extends FragmentBase {
 
 	public void applyDownloadResult(final double[] result, final String[] result2, ArrayList<Parcelable> result3) {
 		mProgressHolder.setAdapter(new ArrayAdapter<Parcelable>(getActivity(), R.layout.history_graph, result3) {
-			private UserProfileBounds bounds;
+			private DataTableBounds bounds;
 
 			@Override
 			public int getItemViewType(int position) {
@@ -232,10 +236,10 @@ public class HistoryGraphFragment extends FragmentBase {
 					LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 					convertView = inflater.inflate(R.layout.progress_entry, mProgressHolder, false);
 					skillIcon = (ImageView) convertView.findViewById(R.id.progress_skill_image);
-					if (!((UserProfileSkill) (this.getItem(position))).mListOfItems.get(0).equals("")) {
+					if (!((DataTable) (this.getItem(position))).mListOfItems.get(0).equals("")) {
 						Drawable imageIcon = getResources().getDrawable(
 								getResources().getIdentifier(
-										((UserProfileSkill) this.getItem(position)).mListOfItems.get(0).toLowerCase(Locale.getDefault()), "drawable",
+										((DataTable) this.getItem(position)).mListOfItems.get(0).toLowerCase(Locale.getDefault()), "drawable",
 										getActivity().getPackageName()));
 						skillIcon.setImageDrawable(imageIcon);
 					} else {
@@ -247,7 +251,7 @@ public class HistoryGraphFragment extends FragmentBase {
 				if (bounds == null) {
 					bounds = calculateLayoutSize(this, getActivity(), (ListView) parent);
 				}
-				ArrayList<String> skill = ((UserProfileSkill) this.getItem(position)).mListOfItems;
+				ArrayList<String> skill = ((DataTable) this.getItem(position)).mListOfItems;
 				View holderOfStrings = convertView.findViewById(R.id.text_lin_layout);
 				ArrayList<View> outVar = new ArrayList<View>();
 				holderOfStrings.findViewsWithText(outVar, "Temp Text", View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION);

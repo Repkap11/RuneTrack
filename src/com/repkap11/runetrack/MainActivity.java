@@ -45,20 +45,22 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.View.OnFocusChangeListener;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.BaseAdapter;
 import android.widget.BaseExpandableListAdapter;
 import android.widget.EditText;
-import android.widget.ExpandableListAdapter;
 import android.widget.ExpandableListView;
 import android.widget.ExpandableListView.OnChildClickListener;
 import android.widget.ExpandableListView.OnGroupClickListener;
 import android.widget.ListView;
 import android.widget.SearchView;
 import android.widget.TextView;
+
+import com.repkap11.runetrack.fragments.HistoryGraphFragment;
+import com.repkap11.runetrack.fragments.RuneTrackHighScoresFragment;
+import com.repkap11.runetrack.fragments.UserProfileFragment;
+import com.repkap11.runetrack.fragments.XpDistributionChartFragment;
 
 public class MainActivity extends Activity {
 	public static final String ARG_USERNAME = "ARG_USERNAME";
@@ -223,17 +225,90 @@ public class MainActivity extends Activity {
 
 			mUserName = mUserNamesToShow.get(0);
 			selectUserProfileByName(mUserName);
+			
 			// selectHitsoryGraph(mUserName, 0, "Overall");
 			// selectPiChart(mUserName);
 
 			// mIsShowingHighScores = true;
-			// selectRuneTrackHighScores("Overall", 1);
+			//selectRuneTrackHighScores("Overall", 1);
 		} else {
 			// Fragment will take care of most of the state...
 			mUserName = savedInstanceState.getString(ARG_USERNAME);
 			mIsShowingHighScores = savedInstanceState.getBoolean(ARG_IS_SHOWING_HIGHSCORES, mIsShowingHighScores);
 
 		}
+	}
+
+	@Override
+	public boolean onCreateOptionsMenu(final Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.main, menu);
+		final SearchView search = (SearchView) menu.findItem(R.id.action_bar_search_user).getActionView();
+		// getCurrentFocus().clearFocus();
+		// search.clearFocus();
+		// search.setFocusable(true);
+		// search.setIconified(false);
+		// search.requestFocusFromTouch();
+		search.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
+		final SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
+			@Override
+			public boolean onQueryTextChange(String newText) {
+				// Do something
+				return true;
+			}
+	
+			@Override
+			public boolean onQueryTextSubmit(String query) {
+				// Do something
+				selectUserProfileByName(query);
+				// search.clearFocus();
+				// search.setIconified(true);
+				menu.findItem(R.id.action_bar_search_user).collapseActionView();
+	
+				return true;
+			}
+		};
+		OnFocusChangeListener focus = new OnFocusChangeListener() {
+			@Override
+			public void onFocusChange(View v, boolean hasFocus) {
+				Log.e(TAG, "Focus Changed");
+				if (!hasFocus) {
+					menu.findItem(R.id.action_bar_search_user).collapseActionView();
+				}
+			}
+		};
+		search.setOnQueryTextListener(queryTextListener);
+		search.setOnQueryTextFocusChangeListener(focus);
+	
+		return super.onCreateOptionsMenu(menu);
+	}
+
+	/* Called whenever we call invalidateOptionsMenu() */
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		// If the nav drawer is open, hide action items related to the content
+		// view
+		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+		MenuItem searchItem = menu.findItem(R.id.action_bar_search_user);
+		searchItem.setVisible(!drawerOpen);
+		searchItem.collapseActionView();
+		// search.clearFocus();
+		// search.setIconified(false);
+		return super.onPrepareOptionsMenu(menu);
+	}
+
+	@Override
+	protected void onPostCreate(Bundle savedInstanceState) {
+		super.onPostCreate(savedInstanceState);
+		// Sync the toggle state after onRestoreInstanceState has occurred.
+		mDrawerToggle.syncState();
+	}
+
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		super.onConfigurationChanged(newConfig);
+		// Pass any configuration change to the drawer toggls
+		mDrawerToggle.onConfigurationChanged(newConfig);
 	}
 
 	@Override
@@ -280,72 +355,6 @@ public class MainActivity extends Activity {
 			}
 		}
 		return urls;
-	}
-
-	@Override
-	public boolean onCreateOptionsMenu(final Menu menu) {
-		MenuInflater inflater = getMenuInflater();
-		inflater.inflate(R.menu.main, menu);
-		final SearchView search = (SearchView) menu.findItem(R.id.action_bar_search_user).getActionView();
-		// getCurrentFocus().clearFocus();
-		// search.clearFocus();
-		// search.setFocusable(true);
-		// search.setIconified(false);
-		// search.requestFocusFromTouch();
-		search.setInputType(InputType.TYPE_TEXT_FLAG_CAP_SENTENCES);
-		final SearchView.OnQueryTextListener queryTextListener = new SearchView.OnQueryTextListener() {
-			@Override
-			public boolean onQueryTextChange(String newText) {
-				// Do something
-				return true;
-			}
-
-			@Override
-			public boolean onQueryTextSubmit(String query) {
-				// Do something
-				selectUserProfileByName(query);
-				// search.clearFocus();
-				// search.setIconified(true);
-				menu.findItem(R.id.action_bar_search_user).collapseActionView();
-
-				return true;
-			}
-		};
-		OnClickListener clickListener = new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Log.e("TAG", "Clicked");
-				menu.findItem(R.id.action_bar_search_user).collapseActionView();
-
-			}
-		};
-		OnFocusChangeListener focus = new OnFocusChangeListener() {
-			@Override
-			public void onFocusChange(View v, boolean hasFocus) {
-				Log.e(TAG, "Focus Changed");
-				if (!hasFocus) {
-					menu.findItem(R.id.action_bar_search_user).collapseActionView();
-				}
-			}
-		};
-		search.setOnQueryTextListener(queryTextListener);
-		search.setOnQueryTextFocusChangeListener(focus);
-
-		return super.onCreateOptionsMenu(menu);
-	}
-
-	/* Called whenever we call invalidateOptionsMenu() */
-	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		// If the nav drawer is open, hide action items related to the content
-		// view
-		boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-		MenuItem searchItem = menu.findItem(R.id.action_bar_search_user);
-		searchItem.setVisible(!drawerOpen);
-		searchItem.collapseActionView();
-		// search.clearFocus();
-		// search.setIconified(false);
-		return super.onPrepareOptionsMenu(menu);
 	}
 
 	@Override
@@ -472,7 +481,7 @@ public class MainActivity extends Activity {
 		}
 	}
 
-	void selectUserProfileByName(String userName) {
+	public void selectUserProfileByName(String userName) {
 		mIsShowingHighScores = false;
 		mUserName = userName;
 		// update the main content by replacing fragments
@@ -522,7 +531,7 @@ public class MainActivity extends Activity {
 
 	}
 
-	void selectHitsoryGraph(String userName, int skillNumber, String skillName) {
+	public void selectHitsoryGraph(String userName, int skillNumber, String skillName) {
 		mIsShowingHighScores = false;
 		// update the main content by replacing fragments
 		Fragment fragment = new HistoryGraphFragment();
@@ -545,19 +554,5 @@ public class MainActivity extends Activity {
 	public void setTitle(CharSequence title) {
 		mTitle = title;
 		getActionBar().setTitle(mTitle);
-	}
-
-	@Override
-	protected void onPostCreate(Bundle savedInstanceState) {
-		super.onPostCreate(savedInstanceState);
-		// Sync the toggle state after onRestoreInstanceState has occurred.
-		mDrawerToggle.syncState();
-	}
-
-	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
-		super.onConfigurationChanged(newConfig);
-		// Pass any configuration change to the drawer toggls
-		mDrawerToggle.onConfigurationChanged(newConfig);
 	}
 }

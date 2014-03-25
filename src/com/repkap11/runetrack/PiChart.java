@@ -17,7 +17,7 @@ import android.widget.Toast;
 
 public class PiChart extends View implements OnTouchListener {
 	private static final String TAG = "PiChart";
-	private Point mCenterPoint;
+	private Point mCenterPoint = new Point(0,0);
 	private int mDiameter;
 
 	@Override
@@ -29,7 +29,7 @@ public class PiChart extends View implements OnTouchListener {
 		// Whatever the width ends up being, ask for a height that would let the
 		// pie
 		// get as big as it can
-		int minh = MeasureSpec.getSize(w) - (int) 10 + getPaddingBottom() + getPaddingTop();
+		//int minh = MeasureSpec.getSize(w) - (int) 10 + getPaddingBottom() + getPaddingTop();
 		int h = resolveSizeAndState(MeasureSpec.getSize(w) - (int) 10, heightMeasureSpec, 0);// Account
 																								// for
 																								// padding
@@ -44,8 +44,8 @@ public class PiChart extends View implements OnTouchListener {
 
 		// Figure out how big we can make the pie
 		mDiameter = (int) Math.min(ww, hh);
-		rectf = new RectF(0, 0, mDiameter, mDiameter);
-		mCenterPoint = new Point(mDiameter / 2, mDiameter / 2);
+		rectf.set(0, 0, mDiameter, mDiameter);
+		mCenterPoint.set(mDiameter / 2, mDiameter / 2);
 		setMeasuredDimension(mDiameter, mDiameter);
 	}
 
@@ -56,7 +56,7 @@ public class PiChart extends View implements OnTouchListener {
 
 	private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 	private int[] colors;
-	RectF rectf;
+	RectF rectf =  new RectF(0, 0, 0, 0);;
 	float temp = 0;
 	private String[] skillNames;
 	private Toast mToast;

@@ -22,7 +22,7 @@
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_toLeftOf="@+id/text2"
-        android:background="@drawable/back_text" >
+        android:background="@drawable/line_background_left" >
 
         <include layout="@layout/user_profile_skill_text_element" />
     </RelativeLayout>
@@ -32,7 +32,7 @@
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_toLeftOf="@+id/text3"
-        android:background="@drawable/back_text" >
+        android:background="@drawable/line_background_left" >
 
         <include layout="@layout/user_profile_skill_text_element" />
     </RelativeLayout>
@@ -42,7 +42,7 @@
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_toLeftOf="@+id/text4"
-        android:background="@drawable/back_text" >
+        android:background="@drawable/line_background_left" >
 
         <include layout="@layout/user_profile_skill_text_element" />
     </RelativeLayout>
@@ -52,7 +52,7 @@
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_toLeftOf="@+id/text5"
-        android:background="@drawable/back_text" >
+        android:background="@drawable/line_background_left" >
 
         <include layout="@layout/user_profile_skill_text_element" />
     </RelativeLayout>
@@ -62,7 +62,7 @@
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_toLeftOf="@+id/text6"
-        android:background="@drawable/back_text" >
+        android:background="@drawable/line_background_left" >
 
         <include layout="@layout/user_profile_skill_text_element" />
     </RelativeLayout>
@@ -72,7 +72,7 @@
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_toLeftOf="@+id/text7"
-        android:background="@drawable/back_text" >
+        android:background="@drawable/line_background_left" >
 
         <include layout="@layout/user_profile_skill_text_element" />
     </RelativeLayout>
@@ -82,7 +82,7 @@
         android:layout_width="wrap_content"
         android:layout_height="fill_parent"
         android:layout_alignParentRight="true"
-        android:background="@drawable/back_text" >
+        android:background="@drawable/line_background_left" >
 
         <include layout="@layout/user_profile_skill_text_element" />
     </RelativeLayout>
