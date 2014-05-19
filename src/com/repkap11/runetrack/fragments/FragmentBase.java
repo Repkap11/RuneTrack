@@ -20,6 +20,9 @@ import android.widget.ListView;
 
 import com.repkap11.runetrack.DataTable;
 import com.repkap11.runetrack.DataTableBounds;
+import android.widget.*;
+import android.text.*;
+import android.text.style.*;
 
 public class FragmentBase extends Fragment {
 	private static final String TAG = "FragmentBase";
@@ -85,5 +88,10 @@ public class FragmentBase extends Fragment {
 		int dpAsPixels = (int) (dp * scale + 0.5f);
 		return dpAsPixels;
 	}
-
+	public static void makeTextViewHyperlink(TextView tv) {
+		SpannableStringBuilder ssb = new SpannableStringBuilder();
+		ssb.append(tv.getText());
+		ssb.setSpan(new URLSpan("#"), 0, ssb.length(), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+		tv.setText(ssb, TextView.BufferType.SPANNABLE);
+	}
 }

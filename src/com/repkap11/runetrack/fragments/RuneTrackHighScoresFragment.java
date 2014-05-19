@@ -242,11 +242,19 @@ public class RuneTrackHighScoresFragment extends FragmentBase {
 				ArrayList<View> outVar = new ArrayList<View>();
 				holderOfStrings.findViewsWithText(outVar, "Temp Text", View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION);
 				for (int m = 1; m < skill.size(); m++) {
-					TextView skillName = (TextView) outVar.get(m - 1);
+					final TextView skillName = (TextView) outVar.get(m - 1);
 					int dim = (int) ((bounds.width) / (bounds.total + 2) * (bounds.totals[m - 1]));
-					String realText = String.format("%1$" + bounds.totals[m - 1] + "s", skill.get(m));
+					final String realText = String.format("%1$" + bounds.totals[m - 1] + "s", skill.get(m));
 					// realText = realText.replace(' ', '%');
 					skillName.setText(realText);
+					if (m==1){
+						skillName.setOnClickListener(new OnClickListener() {
+							@Override
+							public void onClick(View v) {
+								((MainActivity)RuneTrackHighScoresFragment.this.getActivity()).selectUserProfileByName(realText);
+							}
+						});
+					}
 					// }
 					skillName.setTextSize(TypedValue.COMPLEX_UNIT_PX, bounds.textSize);
 					skillName.setWidth(dim);
