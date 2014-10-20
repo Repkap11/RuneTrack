@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ViewSwitcher xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/switcher_loading_content"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/user_profile_background_color" >
+
+    <ViewSwitcher
+        android:id="@+id/switcher_loading_failure"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" >
+
+        <ProgressBar
+            android:id="@+id/progressbar"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center" />
+
+        <TextView
+            android:id="@+id/user_profile_error_message"
+            android:layout_width="fill_parent"
+            android:layout_height="fill_parent"
+            android:layout_gravity="center"
+            android:clickable="true"
+            android:gravity="center"
+            android:text="Failed to load stat progress. Click to try again." />
+    </ViewSwitcher>
+
+    <ListView
+        android:id="@+id/history_graph_content"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:background="@drawable/line_background_all"
+        android:divider="@color/user_profile_grid_color"
+        android:dividerHeight="1dp" />
+
+</ViewSwitcher>

@@ -1,0 +1,15 @@
+<resources>
+
+    <color name="action_bar_top_color">#008b3b</color>
+    <color name="colorPrimary">#008b3b</color>
+    <color name="colorPrimaryDark">#006b1b</color>
+
+    <color name="green_text_color">#008b3b</color>
+    <color name="dark_text_color">#000000</color>
+    <color name="left_drawer_text_color">#ffffff</color>
+    <color name="left_drawer_background_color">#2244aa</color>
+    <color name="user_profile_background_color">#c0c0c0</color>
+    <color name="user_profile_grid_color">#000000</color>
+    <color name="left_drawer_sub_divider_color">@android:color/transparent</color>
+    <color name="left_drawer_divider_color">#55000000</color>
+</resources>
