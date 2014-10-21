@@ -17,13 +17,11 @@ import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.ViewSwitcher;
 
 import com.repkap11.runetrack.DataTable;
 import com.repkap11.runetrack.DataTableBounds;
@@ -39,16 +37,13 @@ import java.util.Locale;
 public class UserProfileFragment extends FragmentBase {
 
     private static final String TAG = "UserProfileFragment";
-
+    public ArrayList<Parcelable> downloadResult;
     private ListView mList;
     private ResponseReceiver receiver;
-    public ArrayList<Parcelable> downloadResult;
     private boolean needsDownload = true;
     private boolean needsToShowDownloadFailure = false;
     private String userName;
-    private ViewSwitcher switcherFailure;
-    private ViewSwitcher switcherContent;
-    private TextView failureRetryButton;
+
 
     public UserProfileFragment() {
         // Empty constructor required for fragment subclasses
@@ -64,17 +59,11 @@ public class UserProfileFragment extends FragmentBase {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         Log.e(TAG, "On create view called ro userprofile fragment");
         View rootView = inflater.inflate(R.layout.fragment_user_profile, container, false);
-        failureRetryButton = (TextView) rootView.findViewById(R.id.user_profile_error_message);
-        failureRetryButton.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                failureRetryOnClick(v);
-            }
-        });
-        switcherContent = (ViewSwitcher) rootView.findViewById(R.id.switcher_loading_content);
-        switcherFailure = (ViewSwitcher) rootView.findViewById(R.id.switcher_loading_failure);
+        onCreatePostSetContentView(rootView, R.string.user_profile_download_error_message);
+
         userName = getArguments().getString(MainActivity.ARG_USERNAME);
         mList = ((ListView) rootView.findViewById(R.id.user_profile_content));
+
         getActivity().setTitle(userName);
         needsDownload = true;
 
@@ -98,7 +87,7 @@ public class UserProfileFragment extends FragmentBase {
         // needsToShowDownloadFailure);
         // Log.e(TAG, "onResume needsDownload " + needsDownload);
         if (needsDownload) {
-            switcherContent.setDisplayedChild(0);
+            setSwitchedView(FragmentBase.SWITCHED_VIEW_SPINNER);
             Intent msgIntent = new Intent(this.getActivity(), DownloadIntentService.class);
             msgIntent.putExtra(DownloadIntentService.PARAM_USERNAME, userName);
             msgIntent.putExtra(DownloadIntentService.PARAM_WHICH_DATA, DownloadIntentService.PARAM_USER_PROFILE_TABLE);
@@ -113,15 +102,14 @@ public class UserProfileFragment extends FragmentBase {
         } else {
 
             if (needsToShowDownloadFailure) {
-                switcherContent.setDisplayedChild(0);
-                switcherFailure.setDisplayedChild(1);
+                setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
             } else {
-                switcherContent.setDisplayedChild(1);
+                setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
             }
         }
     }
 
-    private void failureRetryOnClick(View v) {
+    public void reloadData() {
         ((MainActivity) this.getActivity()).selectUserProfileByName(userName);
     }
 
@@ -134,31 +122,8 @@ public class UserProfileFragment extends FragmentBase {
         }
     }
 
-    public class ResponseReceiver extends BroadcastReceiver {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Log.e(TAG, "before crash");
-            downloadResult = intent.getParcelableArrayListExtra(DownloadIntentService.PARAM_USERNAME);
-            if (downloadResult == null || downloadResult.size() == 0) {
-                switcherContent.setDisplayedChild(0);
-                switcherFailure.setDisplayedChild(1);
-                needsToShowDownloadFailure = true;
-                // Toast.makeText(UserProfileFragment.this.getActivity(),
-                // "Failure", Toast.LENGTH_SHORT).show();
-            } else {
-                DataTable topHeader = new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "Curnt ", "Runescape",
-                        "Stats", "Today", "", "This", "Week"})));
-                DataTable header = new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "Level", "Xp", "Rank", "Lvls",
-                        "Xp", "Lvls", "Xp"})));
-                downloadResult.add(0, topHeader);
-                downloadResult.add(1, header);
-                switcherContent.setDisplayedChild(1);
-                applyDownloadResult(downloadResult);
-            }
-        }
-    }
-
     public void applyDownloadResult(ArrayList<Parcelable> result) {
+        refreshComplete();
         if (result == null) {
             Log.e(TAG, "Result Null");
         } else if (this.getActivity() == null) {
@@ -206,7 +171,7 @@ public class UserProfileFragment extends FragmentBase {
                 ArrayList<String> skill = ((DataTable) this.getItem(position)).mListOfItems;
                 //Log.e(TAG,"Number of textElements:"+outVar.size());
                 for (int m = 1; m < skill.size(); m++) {
-                    TextView skillName = (TextView) outVar.get(outVar.size()- m );
+                    TextView skillName = (TextView) outVar.get(outVar.size() - m);
                     int dim = 0;
                     if (position == 0) {
                         int dimTemp = 0;
@@ -224,7 +189,7 @@ public class UserProfileFragment extends FragmentBase {
                             realText = "This Week";
                         }
                         if (dimTemp != 0) {
-                            dim = ((bounds.width) / (bounds.total + 2) * dimTemp);
+                            dim = ((bounds.width) / (bounds.total + IMAGE_CHAR_SIZE) * dimTemp);
                             realText = String.format("%1$" + dimTemp + "s", realText);
                             skillName.setText(realText);
                         } else {
@@ -232,7 +197,7 @@ public class UserProfileFragment extends FragmentBase {
                         }
 
                     } else {
-                        dim = (int) ((bounds.width) / (bounds.total + 2) * (bounds.totals[m - 1]));
+                        dim = (int) ((bounds.width) / (bounds.total + IMAGE_CHAR_SIZE) * (bounds.totals[m - 1]));
                         // Log.e(TAG,"M:"+m);
                         String realText = String.format("%1$" + bounds.totals[m - 1] + "s", skill.get(m));
                         skillName.setText(realText);
@@ -264,5 +229,38 @@ public class UserProfileFragment extends FragmentBase {
     public void onDetach() {
         Log.e(TAG, "Fragment Detached");
         super.onDetach();
+    }
+
+    @Override
+    protected boolean isWaitingForData() {
+        return needsDownload;
+    }
+
+    @Override
+    public boolean canScrollUp() {
+        return mList.canScrollVertically(-1);
+    }
+
+    public class ResponseReceiver extends BroadcastReceiver {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            // Log.e(TAG, "before crash");
+            downloadResult = intent.getParcelableArrayListExtra(DownloadIntentService.PARAM_USERNAME);
+            if (downloadResult == null || downloadResult.size() == 0) {
+                setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
+                needsToShowDownloadFailure = true;
+                // Toast.makeText(UserProfileFragment.this.getActivity(),
+                // "Failure", Toast.LENGTH_SHORT).show();
+            } else {
+                DataTable topHeader = new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "Curnt ", "Runescape",
+                        "Stats", "Tod", "ay", "This", "Week"})));
+                DataTable header = new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "Level", "Xp", "Rank", "Lvls",
+                        "Xp", "Lvls", "Xp"})));
+                downloadResult.add(0, topHeader);
+                downloadResult.add(1, header);
+                setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
+                applyDownloadResult(downloadResult);
+            }
+        }
     }
 }

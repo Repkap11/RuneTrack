@@ -1,8 +1,5 @@
 package com.repkap11.runetrack;
 
-import java.text.NumberFormat;
-import java.util.Locale;
-
 import android.content.Context;
 import android.graphics.Canvas;
 import android.graphics.Paint;
@@ -15,10 +12,16 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.widget.Toast;
 
+import com.repkap11.runetrack.fragments.XpDistributionChartFragment;
+
+import java.text.NumberFormat;
+import java.util.Locale;
+
 public class PiChart extends View implements OnTouchListener {
 	private static final String TAG = "PiChart";
 	private Point mCenterPoint = new Point(0,0);
 	private int mDiameter;
+    private MainActivity mActivity;
 
 	@Override
 	protected void onMeasure(int widthMeasureSpec, int heightMeasureSpec) {
@@ -51,6 +54,7 @@ public class PiChart extends View implements OnTouchListener {
 
 	public PiChart(Context context, AttributeSet attrs) {
 		super(context, attrs);
+        mActivity = (MainActivity)context;
 		this.setOnTouchListener(this);
 	}
 
@@ -103,13 +107,16 @@ public class PiChart extends View implements OnTouchListener {
 
 	@Override
 	public boolean onTouch(View v, MotionEvent event) {
-		switch (event.getAction()) {
+		boolean returnValue = false;
+        switch (event.getAction()) {
 		case MotionEvent.ACTION_DOWN:
+            ((XpDistributionChartFragment)(mActivity.mCurrentFragment)).mPullToRefreshLayout.setEnabled(false);
 		case MotionEvent.ACTION_MOVE:
-			showTouchMessage(event);
+            returnValue = showTouchMessage(event);
 			// Handle Touch Move
 			break;
 		case MotionEvent.ACTION_UP:
+            ((XpDistributionChartFragment)(mActivity.mCurrentFragment)).mPullToRefreshLayout.setEnabled(true);
 			if (mToast != null) {
 				mToast.cancel();
 				mPreviousIndex = -1;
@@ -123,7 +130,7 @@ public class PiChart extends View implements OnTouchListener {
 	/**
 	 * @param event
 	 */
-	private void showTouchMessage(MotionEvent event) {
+	private boolean showTouchMessage(MotionEvent event) {
 		if (mToast != null) {
 			mToast.cancel();
 		}
@@ -152,11 +159,13 @@ public class PiChart extends View implements OnTouchListener {
 				invalidate();
 			}
 			mPreviousIndex = index;
+            return true;
 		} else {
 			if (mPreviousIndex != -1) {
 				invalidate();
 			}
 			mPreviousIndex = -1;
+            return true;
 		}
 
 	}

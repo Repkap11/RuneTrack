@@ -5,6 +5,7 @@
     android:layout_height="fill_parent"
     android:contentDescription="Temp Text"
     android:gravity="right"
+    android:paddingRight="1dp"
     android:background="@drawable/line_background_left"
     android:maxLines="1"
     android:theme="@style/android:Theme.Holo"

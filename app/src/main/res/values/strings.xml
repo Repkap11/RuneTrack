@@ -3,9 +3,17 @@
     <string name="app_name">RuneTrack</string>
     <string name="drawer_open">Open navigation drawer</string>
     <string name="drawer_close">Close navigation drawer</string>
-    <string name="action_settings">Settings</string>
     <string name="choose_a_skill">Choose a Skill</string>
+
     <string name="next_page">Next Page</string>
-    <string name="search_user">Search User</string>
     <string name="previous_page">Previous Page</string>
+    <string name="search_user">Search User</string>
+
+    <string name="runetrack_highscores">RuneTrack High Scores</string>
+    <string name="xp_pi_chart_download_error_message">Failed to load weekly xp pi chart. Drag down to refresh.</string>
+    <string name="user_profile_download_error_message">Failed to load user profile. Drag down to refresh.</string>
+    <string name="history_graph_download_error_message">Failed to load history information. Drag down to refresh.</string>
+    <string name="highscores_download_error_message">Failed to load highscores information. Drag down to refresh.</string>
+    <string name="pull_to_refresh">Pull to refresh...</string>
+
 </resources>
