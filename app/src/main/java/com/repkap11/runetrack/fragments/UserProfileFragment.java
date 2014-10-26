@@ -29,6 +29,7 @@ import com.repkap11.runetrack.DataTableViewHolder;
 import com.repkap11.runetrack.DownloadIntentService;
 import com.repkap11.runetrack.MainActivity;
 import com.repkap11.runetrack.R;
+import com.repkap11.runetrack.TextDrawable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -44,40 +45,33 @@ public class UserProfileFragment extends FragmentBase {
     private boolean needsToShowDownloadFailure = false;
     private String userName;
 
-
     public UserProfileFragment() {
         // Empty constructor required for fragment subclasses
     }
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        Log.e(TAG, "On create view called ro userprofile fragment");
-        View rootView = inflater.inflate(R.layout.fragment_user_profile, container, false);
-        onCreatePostSetContentView(rootView, R.string.user_profile_download_error_message);
-
+    public Drawable onInflateContentView(ViewGroup container){
+        LayoutInflater inflater = LayoutInflater.from(this.getActivity());
+        Log.e(TAG, "On create view called userprofile fragment");
+        TextDrawable result = new TextDrawable(getResources().getString(R.string.user_profile_download_error_message));
+        View rootView = inflater.inflate(R.layout.fragment_content_shared_list, container, true);
         userName = getArguments().getString(MainActivity.ARG_USERNAME);
-        mList = ((ListView) rootView.findViewById(R.id.user_profile_content));
+        mList = ((ListView) rootView.findViewById(R.id.fragment_content_shared_list_list));
 
         getActivity().setTitle(userName);
         needsDownload = true;
 
-        if (savedInstanceState != null) {
+        if (mSavedInstanceState != null) {
 
-            needsToShowDownloadFailure = savedInstanceState.getBoolean("needsToShowDownloadFailure");
+            needsToShowDownloadFailure = mSavedInstanceState.getBoolean("needsToShowDownloadFailure");
             Log.e(TAG, "needsToShowDownloadFailure updated from state : " + needsToShowDownloadFailure);
-            downloadResult = savedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_USERNAME);
+            downloadResult = mSavedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_USERNAME);
             if (downloadResult != null) {
                 needsDownload = false;
                 applyDownloadResult(downloadResult);
             }
         }
-        return rootView;
+        return result;
     }
 
     @Override
@@ -131,7 +125,7 @@ public class UserProfileFragment extends FragmentBase {
         } else {
             Log.e(TAG, "All good, neither null");
         }
-        mList.setAdapter(new ArrayAdapter<Parcelable>(this.getActivity(), R.layout.fragment_user_profile_holder, result) {
+        mList.setAdapter(new ArrayAdapter<Parcelable>(this.getActivity(),0, result) {
             private DataTableBounds bounds;
 
             @Override
@@ -148,7 +142,7 @@ public class UserProfileFragment extends FragmentBase {
                     skillIcon = holder.mImageView;
                 } else {
                     LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    returnView = inflater.inflate(R.layout.fragment_user_profile_skill, mList, false);
+                    returnView = inflater.inflate(R.layout.fragment_table_row_user_profile, mList, false);
                     skillIcon = (ImageView) returnView.findViewById(R.id.fragment_table_skill_image);
                     View holderOfStrings = returnView.findViewById(R.id.text_lin_layout);
                     outVar = new ArrayList<View>();

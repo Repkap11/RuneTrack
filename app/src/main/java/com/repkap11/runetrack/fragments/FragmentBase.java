@@ -10,18 +10,22 @@ import android.content.Context;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.URLSpan;
+import android.util.Log;
 import android.view.Display;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
@@ -29,7 +33,8 @@ import com.repkap11.runetrack.DataTable;
 import com.repkap11.runetrack.DataTableBounds;
 import com.repkap11.runetrack.MainActivity;
 import com.repkap11.runetrack.R;
-import com.repkap11.runetrack.TextDrawable;
+
+import java.util.ArrayList;
 
 import uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout;
 import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
@@ -40,12 +45,15 @@ public abstract class FragmentBase extends Fragment implements
     protected static final int SWITCHED_VIEW_SPINNER = 0;
     protected static final int SWITCHED_VIEW_RETRY = 1;
     protected static final int SWITCHED_VIEW_CONTENT = 2;
+    protected static final int IMAGE_CHAR_SIZE = 3;
     private static final String TAG = "FragmentBase";
-    private TextView failureRetryButton;
+    protected Bundle mSavedInstanceState = null;
     public PullToRefreshLayout mPullToRefreshLayout;
+    private TextView failureRetryButton;
+    private Handler mHandler = new Handler();
     private ViewSwitcher switcherOutside;
     private ViewSwitcher switcherInside;
-    protected static final int IMAGE_CHAR_SIZE = 3;
+    private Drawable mDrawable;
 
     public static DataTableBounds calculateLayoutSize(ArrayAdapter<Parcelable> arrayAdapter, Context context, ListView view) {
         // Log.e(TAG, "Calculating Bounds");
@@ -124,44 +132,56 @@ public abstract class FragmentBase extends Fragment implements
 
     public abstract void reloadData();
 
-    protected void onCreatePostSetContentView(View rootView, int errorMessageResource) {
-        /*
-        failureRetryButton = (TextView) rootView.findViewById(R.id.user_profile_error_message);
-        failureRetryButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                failureRetryOnClick(v);
-            }
-        });
-        */
-
+    @Override
+    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        mSavedInstanceState = savedInstanceState;
+        final ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_content_base, container, false);
+        rootView.findViewById(R.id.content_error_message).setBackground(mDrawable);
         switcherOutside = (ViewSwitcher) rootView.findViewById(R.id.switcher_outside);
         switcherInside = (ViewSwitcher) rootView.findViewById(R.id.switcher_inside);
         mPullToRefreshLayout = (PullToRefreshLayout) rootView.findViewById(R.id.swipe_container);
-        View view = switcherInside.getChildAt(0);
-        View[] viewsToAdd;
-        if (view instanceof ListView) {
-            ListView lv = ((ListView) switcherInside.getChildAt(0));
-            lv.setBackground(new TextDrawable(getResources().getString(errorMessageResource)));
-            viewsToAdd = new View[]{switcherInside.getChildAt(1), switcherInside.getChildAt(0)};
-        } else if (view instanceof ViewSwitcher) {
-            ViewSwitcher vs = ((ViewSwitcher) switcherInside.getChildAt(0));
-            RelativeLayout rl = ((RelativeLayout) switcherInside.getChildAt(1));
-            View view0 = vs.getChildAt(0);
-            View view1 = vs.getChildAt(1);
-            ListView view2 = (ListView)rl.getChildAt(0);
-            viewsToAdd = new View[]{switcherInside.getChildAt(1), view0, view1, view2};
-        } else {
-            viewsToAdd = new View[]{switcherInside.getChildAt(1)};
+
+        //rootView.findViewsWithText(outViews, getResources().getString(R.string.pullable_to_refresh_view), View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION);
+
+
+        ArrayList<View> outViews = new ArrayList<View>();
+        fixedFindViewsWithText(rootView, outViews, getResources().getString(R.string.pullable_to_refresh_view));
+        Log.e("TAG", "Found scrollable lists:" + outViews.size());
+        View[] pullableViews = new View[0];
+        pullableViews = outViews.toArray(pullableViews);
+        for (int i = 0; i < pullableViews.length; i++) {
+            if (pullableViews[i] != null) {
+                Log.e("Test", "View a subview of pullable view");
+            }
         }
+
+        Log.e("TAG", "Found scrollable lists:" + pullableViews.length);
         ActionBarPullToRefresh.from(getActivity())
-                .theseChildrenArePullable(viewsToAdd)
-                .listener(this)
+                .theseChildrenArePullable(pullableViews)
+                .listener(FragmentBase.this)
+                        //.allChildrenArePullable()
                 .setup(mPullToRefreshLayout);
+        mSavedInstanceState = null;
+        return rootView;
+    }
+
+    public void fixedFindViewsWithText(ViewGroup rootView, ArrayList<View> outViews, String string) {
+        CharSequence description = rootView.getContentDescription();
+        if (description != null && description.toString().equals(string)) {
+            Log.e("TAG", "Found scrollable lists");
+            outViews.add(rootView);
+        }
+        for (int i = 0; i < rootView.getChildCount(); i++) {
+            View child = rootView.getChildAt(i);
+            if (child instanceof ViewGroup) {
+                fixedFindViewsWithText((ViewGroup) child, outViews, string);
+            }
+        }
     }
 
     @Override
     public void onRefreshStarted(View view) {
+        Log.e(TAG, "Refresh started");
         reloadData();
     }
 
@@ -185,5 +205,11 @@ public abstract class FragmentBase extends Fragment implements
                 switcherInside.setDisplayedChild(1);
                 break;
         }
+    }
+
+    protected abstract Drawable onInflateContentView(ViewGroup container);
+
+    public void inflateContentView(ViewGroup container) {
+        mDrawable = onInflateContentView(container);
     }
 }

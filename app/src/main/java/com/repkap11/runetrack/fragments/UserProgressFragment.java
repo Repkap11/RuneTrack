@@ -1,5 +1,5 @@
 /**
- * HistoryGraphFragment.java
+ * UserProgressFragment.java
  * $Id:$
  * $Log:$
  * @author Paul Repka psr2608
@@ -40,6 +40,7 @@ import com.repkap11.runetrack.DataTableViewHolder;
 import com.repkap11.runetrack.DownloadIntentService;
 import com.repkap11.runetrack.MainActivity;
 import com.repkap11.runetrack.R;
+import com.repkap11.runetrack.TextDrawable;
 
 import java.text.NumberFormat;
 import java.util.ArrayList;
@@ -49,9 +50,9 @@ import java.util.Locale;
 /**
  * Fragment that appears in the "content_frame", shows a planet
  */
-public class HistoryGraphFragment extends FragmentBase {
+public class UserProgressFragment extends FragmentBase {
 
-    public static final String TAG = "HistoryGraphFragment";
+    public static final String TAG = "UserProgressFragment";
     public double[] downloadResult;
     public String[] downloadResult2;
     public ArrayList<Parcelable> downloadResult3;
@@ -63,7 +64,7 @@ public class HistoryGraphFragment extends FragmentBase {
     private int skillNumber;
     private String skillName;
 
-    public HistoryGraphFragment() {
+    public UserProgressFragment() {
         // Empty constructor required for fragment subclasses
     }
 
@@ -72,6 +73,7 @@ public class HistoryGraphFragment extends FragmentBase {
         Log.e(TAG, "Fragment Detached");
         super.onDetach();
     }
+
     @Override
     public void onPause() {
         super.onPause();
@@ -127,31 +129,32 @@ public class HistoryGraphFragment extends FragmentBase {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_history_graph, container, false);
+    public Drawable onInflateContentView(ViewGroup container) {
+       LayoutInflater inflater = LayoutInflater.from(this.getActivity());
+        TextDrawable result = new TextDrawable(getResources().getString(R.string.history_graph_download_error_message));
+        View rootView = inflater.inflate(R.layout.fragment_content_shared_list, container, true);
         userName = getArguments().getString(MainActivity.ARG_USERNAME);
         skillName = getArguments().getString(MainActivity.ARG_SKILL_NAME);
         skillNumber = getArguments().getInt(MainActivity.ARG_SKILL_NUMBER);
-        mProgressHolder = ((ListView) rootView.findViewById(R.id.history_graph_content));
-        onCreatePostSetContentView(rootView,R.string.history_graph_download_error_message);
+        mProgressHolder = ((ListView) rootView.findViewById(R.id.fragment_content_shared_list_list));
         mProgressHolder.setScrollingCacheEnabled(false);
         mProgressHolder.setAnimationCacheEnabled(false);
         getActivity().setTitle(userName);
         needsDownload = true;
 
-        if (savedInstanceState != null) {
+        if (mSavedInstanceState != null) {
 
-            needsToShowDownloadFailure = savedInstanceState.getBoolean("needsToShowDownloadFailure");
+            needsToShowDownloadFailure = mSavedInstanceState.getBoolean("needsToShowDownloadFailure");
             Log.e(TAG, "needsToShowDownloadFailure updated from state : " + needsToShowDownloadFailure);
-            downloadResult = savedInstanceState.getDoubleArray(DownloadIntentService.PARAM_USERNAME);
-            downloadResult2 = savedInstanceState.getStringArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE);
-            downloadResult3 = savedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_PROGRESS_ENTRIES);
+            downloadResult = mSavedInstanceState.getDoubleArray(DownloadIntentService.PARAM_USERNAME);
+            downloadResult2 = mSavedInstanceState.getStringArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE);
+            downloadResult3 = mSavedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_PROGRESS_ENTRIES);
             if (downloadResult != null) {
                 needsDownload = false;
                 applyDownloadResult(downloadResult, downloadResult2, downloadResult3);
             }
         }
-        return rootView;
+        return result;
     }
 
     @Override
@@ -166,7 +169,7 @@ public class HistoryGraphFragment extends FragmentBase {
 
     public void applyDownloadResult(final double[] result, final String[] result2, ArrayList<Parcelable> result3) {
         refreshComplete();
-        mProgressHolder.setAdapter(new ArrayAdapter<Parcelable>(getActivity(), R.layout.fragment_history_graph, result3) {
+        mProgressHolder.setAdapter(new ArrayAdapter<Parcelable>(getActivity(), 0, result3) {
             private DataTableBounds bounds;
 
             @Override
@@ -208,7 +211,7 @@ public class HistoryGraphFragment extends FragmentBase {
                     skillIcon = holder.mImageView;
                 } else {
                     LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    returnView = inflater.inflate(R.layout.fragment_progress_entry, mProgressHolder, false);
+                    returnView = inflater.inflate(R.layout.fragment_table_row_user_progress, mProgressHolder, false);
                     skillIcon = (ImageView) returnView.findViewById(R.id.fragment_table_skill_image);
                     outVar = new ArrayList<View>();
                     returnView.findViewsWithText(outVar, "Temp Text", View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION);
@@ -270,7 +273,7 @@ public class HistoryGraphFragment extends FragmentBase {
         }
 
         LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-        LinearLayout returnView = (LinearLayout) inflater.inflate(R.layout.fragment_grid_view_holder, mProgressHolder, false);
+        LinearLayout returnView = (LinearLayout) inflater.inflate(R.layout.fragment_user_stat_progress_graph_view_holder, mProgressHolder, false);
 
         final GraphView graphView = new LineGraphView(this.getActivity(), "");
         graphView.getGraphViewStyle().setGridColor(Color.WHITE);
@@ -318,7 +321,7 @@ public class HistoryGraphFragment extends FragmentBase {
                 Log.e(TAG, "downloadResult3:" + downloadResult3);
                 setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
                 needsToShowDownloadFailure = true;
-                // Toast.makeText(HistoryGraphFragment.this.getActivity(),
+                // Toast.makeText(UserProgressFragment.this.getActivity(),
                 // "Failure", Toast.LENGTH_SHORT).show();
             } else {
                 downloadResult3.add(

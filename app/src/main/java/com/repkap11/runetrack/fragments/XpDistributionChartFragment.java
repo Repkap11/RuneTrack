@@ -1,5 +1,5 @@
 /**
- * HistoryGraphFragment.java
+ * UserProgressFragment.java
  * $Id:$
  * $Log:$
  * @author Paul Repka psr2608
@@ -10,18 +10,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 import android.widget.ViewSwitcher;
 
 import com.repkap11.runetrack.DownloadIntentService;
 import com.repkap11.runetrack.MainActivity;
 import com.repkap11.runetrack.PiChart;
 import com.repkap11.runetrack.R;
+import com.repkap11.runetrack.TextDrawable;
 
 public class XpDistributionChartFragment extends FragmentBase {
 
@@ -110,27 +111,26 @@ public class XpDistributionChartFragment extends FragmentBase {
     }
 
     @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+    public Drawable onInflateContentView(ViewGroup container){
+        TextDrawable result = new TextDrawable(getResources().getString(R.string.xp_pi_chart_download_error_message));
+        LayoutInflater inflater = LayoutInflater.from(this.getActivity());
         userName = getArguments().getString(MainActivity.ARG_USERNAME);
         skillNumber = getArguments().getInt(MainActivity.ARG_SKILL_NUMBER);
-        View rootView = inflater.inflate(R.layout.fragment_xp_pi_chart, container, false);
-        //View textViewUserGainedNoXP = rootView.findViewById(R.id.user_gained_no_xp_error_message);
-        //textViewUserGainedNoXP.setText(userName + " gained no xp this week.");
-        switcherUserGainedNoXP = (ViewSwitcher) rootView.findViewById(R.id.switcher_user_got_no_xp);
-        onCreatePostSetContentView(rootView,R.string.xp_pi_chart_download_error_message);
+        View rootView = inflater.inflate(R.layout.fragment_content_xp_pi_chart, container, true);
+        //switcherUserGainedNoXP = (ViewSwitcher) rootView.findViewById(R.id.switcher_user_got_no_xp);
         mPiChart = ((PiChart) rootView.findViewById(R.id.xp_pi_chart_content));
 
         getActivity().setTitle(userName);
         needsDownload = true;
 
-        if (savedInstanceState != null) {
+        if (mSavedInstanceState != null) {
 
-            needsToShowDownloadFailure = savedInstanceState.getBoolean("needsToShowDownloadFailure");
+            needsToShowDownloadFailure = mSavedInstanceState.getBoolean("needsToShowDownloadFailure");
             Log.e(TAG, "needsToShowDownloadFailure updated from state : " + needsToShowDownloadFailure);
-            downloadResult = savedInstanceState.getIntArray(DownloadIntentService.PARAM_XP_PER_SKILL);
-            downloadResult2 = savedInstanceState.getIntArray(DownloadIntentService.PARAM_XP_COLORS);
-            downloadResult3 = savedInstanceState.getStringArray(DownloadIntentService.PARAM_XP_SKILL_NAMES);
-            needsToShowUserGainedNoXP = savedInstanceState.getBoolean(DownloadIntentService.PARAM_XP_USER_GAINED_NO_XP);
+            downloadResult = mSavedInstanceState.getIntArray(DownloadIntentService.PARAM_XP_PER_SKILL);
+            downloadResult2 = mSavedInstanceState.getIntArray(DownloadIntentService.PARAM_XP_COLORS);
+            downloadResult3 = mSavedInstanceState.getStringArray(DownloadIntentService.PARAM_XP_SKILL_NAMES);
+            needsToShowUserGainedNoXP = mSavedInstanceState.getBoolean(DownloadIntentService.PARAM_XP_USER_GAINED_NO_XP);
             Log.e(TAG, "needsToShowUserGainedNoXP updated from state : " + needsToShowUserGainedNoXP);
             if (downloadResult != null) {
                 needsDownload = false;
@@ -139,12 +139,9 @@ public class XpDistributionChartFragment extends FragmentBase {
             if (needsToShowUserGainedNoXP) {
                 needsDownload = false;
                 Log.e(TAG, "Hit this place");
-                // switcherFailure.setDisplayedChild(1);
-                // switcherUserGainedNoXP.setDisplayedChild(1);
-                // switcherContent.setDisplayedChild(0);
             }
         }
-        return rootView;
+        return result;
     }
 
     public void applyDownloadResult(final int[] downloadResult4, final int[] downloadResult2, String[] downloadResult3) {
@@ -178,11 +175,11 @@ public class XpDistributionChartFragment extends FragmentBase {
                 setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
                 needsToShowDownloadFailure = true;
                 if (needsToShowUserGainedNoXP) {
-                    switcherUserGainedNoXP.setDisplayedChild(1);
+                    //switcherUserGainedNoXP.setDisplayedChild(1);
                 } else {
-                    switcherUserGainedNoXP.setDisplayedChild(0);
+                    //switcherUserGainedNoXP.setDisplayedChild(0);
                 }
-                // Toast.makeText(HistoryGraphFragment.this.getActivity(),
+                // Toast.makeText(UserProgressFragment.this.getActivity(),
                 // "Failure", Toast.LENGTH_SHORT).show();
             } else {
                 setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);

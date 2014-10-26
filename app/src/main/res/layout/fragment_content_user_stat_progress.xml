@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<ListView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/user_progress_content"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/line_background_all"
+    android:contentDescription="@string/pullable_to_refresh_view"
+    android:divider="@color/user_profile_grid_color"
+    android:dividerHeight="1dp"
+    android:gravity="center"
+    android:scrollbars="none" />

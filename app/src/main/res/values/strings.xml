@@ -15,5 +15,6 @@
     <string name="history_graph_download_error_message">Failed to load history information. Drag down to refresh.</string>
     <string name="highscores_download_error_message">Failed to load highscores information. Drag down to refresh.</string>
     <string name="pull_to_refresh">Pull to refresh...</string>
+    <string name="pullable_to_refresh_view">pullable_to_refresh_view</string>
 
 </resources>

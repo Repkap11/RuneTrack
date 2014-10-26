@@ -5,14 +5,14 @@
     android:layout_centerVertical="true" >
 
     <Button
-        android:id="@+id/runetrack_high_score_previous_button"
+        android:id="@+id/table_row_highscore_previous_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:text="@string/previous_page" />
 
     <Button
-        android:id="@+id/runetrack_high_score_next_button"
+        android:id="@+id/table_row_highscore_next_button"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_alignParentRight="true"

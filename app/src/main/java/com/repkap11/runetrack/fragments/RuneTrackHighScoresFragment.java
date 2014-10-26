@@ -1,5 +1,5 @@
 /**
- * HistoryGraphFragment.java
+ * UserProgressFragment.java
  * $Id:$
  * $Log:$
  * @author Paul Repka psr2608
@@ -30,6 +30,7 @@ import com.repkap11.runetrack.DataTableBounds;
 import com.repkap11.runetrack.DownloadIntentService;
 import com.repkap11.runetrack.MainActivity;
 import com.repkap11.runetrack.R;
+import com.repkap11.runetrack.TextDrawable;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -54,33 +55,29 @@ public class RuneTrackHighScoresFragment extends FragmentBase {
         Log.e(TAG, "Fragment Detached");
         super.onDetach();
     }
-
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View rootView = inflater.inflate(R.layout.fragment_history_graph, container, false);
+    public Drawable onInflateContentView(ViewGroup container){
+        LayoutInflater inflater = LayoutInflater.from(this.getActivity());
+        //TODO change to its own layout?
+        TextDrawable result = new TextDrawable(getResources().getString(R.string.highscores_download_error_message));
+        View rootView = inflater.inflate(R.layout.fragment_content_shared_list, container, true);
         skillName = getArguments().getString(MainActivity.ARG_SKILL_NAME);
         pageNumber = getArguments().getInt(MainActivity.ARG_PAGE_NUMBER);
-        mProgressHolder = ((ListView) rootView.findViewById(R.id.history_graph_content));
-        onCreatePostSetContentView(rootView,R.string.highscores_download_error_message);
+        mProgressHolder = ((ListView) rootView.findViewById(R.id.fragment_content_shared_list_list));
         getActivity().setTitle(getResources().getString(R.string.runetrack_highscores));
         needsDownload = true;
 
-        if (savedInstanceState != null) {
+        if (mSavedInstanceState != null) {
 
-            needsToShowDownloadFailure = savedInstanceState.getBoolean("needsToShowDownloadFailure");
+            needsToShowDownloadFailure = mSavedInstanceState.getBoolean("needsToShowDownloadFailure");
             Log.e(TAG, "needsToShowDownloadFailure updated from state : " + needsToShowDownloadFailure);
-            downloadResult = savedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_HIGH_SCORES_ENTRIES);
+            downloadResult = mSavedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_HIGH_SCORES_ENTRIES);
             if (downloadResult != null) {
                 needsDownload = false;
                 applyDownloadResult(downloadResult);
             }
         }
-        return rootView;
+        return result;
     }
 
     @Override
@@ -137,7 +134,7 @@ public class RuneTrackHighScoresFragment extends FragmentBase {
 
     public void applyDownloadResult(ArrayList<Parcelable> result) {
         refreshComplete();
-        mProgressHolder.setAdapter(new ArrayAdapter<Parcelable>(getActivity(), R.layout.fragment_history_graph, result) {
+        mProgressHolder.setAdapter(new ArrayAdapter<Parcelable>(getActivity(),0, result) {
             private DataTableBounds bounds;
 
             @Override
@@ -164,9 +161,9 @@ public class RuneTrackHighScoresFragment extends FragmentBase {
                         return convertView;
                     } else {
                         LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                        convertView = inflater.inflate(R.layout.fragment_high_score_table_next_previous, mProgressHolder, false);
-                        Button next = (Button) convertView.findViewById(R.id.runetrack_high_score_next_button);
-                        Button previous = (Button) convertView.findViewById(R.id.runetrack_high_score_previous_button);
+                        convertView = inflater.inflate(R.layout.fragment_table_row_highscores_next_previous, mProgressHolder, false);
+                        Button next = (Button) convertView.findViewById(R.id.table_row_highscore_next_button);
+                        Button previous = (Button) convertView.findViewById(R.id.table_row_highscore_previous_button);
                         if (RuneTrackHighScoresFragment.this.pageNumber == 1) {
                             previous.setVisibility(View.GONE);
                         }
@@ -194,7 +191,7 @@ public class RuneTrackHighScoresFragment extends FragmentBase {
                 if (convertView == null) {
                     ImageView skillIcon;
                     LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-                    convertView = inflater.inflate(R.layout.fragment_high_score_table_entry, mProgressHolder, false);
+                    convertView = inflater.inflate(R.layout.fragment_table_row_high_score, mProgressHolder, false);
                     skillIcon = (ImageView) convertView.findViewById(R.id.fragment_table_skill_image);
                     if (!((DataTable) (this.getItem(position))).mListOfItems.get(0).equals("") && position != 1) {
                         //String iconName = ((DataTable) this.getItem(position)).mListOfItems.get(0).toLowerCase(Locale.getDefault());
@@ -258,7 +255,7 @@ public class RuneTrackHighScoresFragment extends FragmentBase {
             if (downloadResult == null || downloadResult.size() == 0) {
                 setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
                 needsToShowDownloadFailure = true;
-                // Toast.makeText(HistoryGraphFragment.this.getActivity(),
+                // Toast.makeText(UserProgressFragment.this.getActivity(),
                 // "Failure", Toast.LENGTH_SHORT).show();
             } else {
                 downloadResult.add(0, new DataTable(

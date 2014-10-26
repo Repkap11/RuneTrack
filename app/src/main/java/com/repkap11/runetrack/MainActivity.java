@@ -15,12 +15,10 @@ import android.view.View.OnFocusChangeListener;
 import android.view.inputmethod.InputMethodManager;
 
 import com.repkap11.runetrack.fragments.FragmentBase;
-import com.repkap11.runetrack.fragments.HistoryGraphFragment;
+import com.repkap11.runetrack.fragments.UserProgressFragment;
 import com.repkap11.runetrack.fragments.RuneTrackHighScoresFragment;
 import com.repkap11.runetrack.fragments.UserProfileFragment;
 import com.repkap11.runetrack.fragments.XpDistributionChartFragment;
-
-import uk.co.senab.actionbarpulltorefresh.library.DefaultHeaderTransformer;
 
 public class MainActivity extends DrawerHandlingActivity {
 
@@ -45,27 +43,6 @@ public class MainActivity extends DrawerHandlingActivity {
         onCreateAfterSetContentView(savedInstanceState);
         // Now find the PullToRefreshLayout to setup
 
-/*
-        // the refresh listner. this would be called when the layout is pulled down
-        //mSwipeRefreshLayout.setSize(SwipeRefreshLayout.LARGE);
-        //mSwipeRefreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-
-            @Override
-            public void onRefresh() {
-                // get the new data from you data source
-                // TODO : request data here
-                // our swipeRefreshLayout needs to be notified when the data is returned in order for it to stop the animation
-
-                mSwipeRefreshLayout.setRefreshing(true);
-                //handler.post(mRefreshing);
-            }
-        });
-        // sets the colors used in the refresh animation
-        mSwipeRefreshLayout.setColorSchemeResources(R.color.action_bar_top_color, R.color.left_drawer_background_color,
-                R.color.action_bar_top_color, R.color.left_drawer_background_color);
-
-
-        */
         mTitle = getTitle();
 
 
@@ -191,7 +168,7 @@ public class MainActivity extends DrawerHandlingActivity {
         mCurrentFragment.setArguments(args);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.content_frame, mCurrentFragment, FRAGMENT_TAG).commit();
+        fragmentManager.beginTransaction().replace(R.id.content_frame, mCurrentFragment, FRAGMENT_TAG).commitAllowingStateLoss();
 
         // update selected item and title, then close the drawer
         //mDrawerList.setItemChecked(position, true);
@@ -211,7 +188,7 @@ public class MainActivity extends DrawerHandlingActivity {
 
         mCurrentFragment.setArguments(args);
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.content_frame, mCurrentFragment, FRAGMENT_TAG).commit();
+        fragmentManager.beginTransaction().replace(R.id.content_frame, mCurrentFragment, FRAGMENT_TAG).commitAllowingStateLoss();
         setTitle(getResources().getString(R.string.runetrack_highscores));
     }
 
@@ -227,7 +204,7 @@ public class MainActivity extends DrawerHandlingActivity {
         mCurrentFragment.setArguments(args);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.content_frame, mCurrentFragment, FRAGMENT_TAG).commit();
+        fragmentManager.beginTransaction().replace(R.id.content_frame, mCurrentFragment, FRAGMENT_TAG).commitAllowingStateLoss();
         setTitle(userName);
     }
 
@@ -236,7 +213,7 @@ public class MainActivity extends DrawerHandlingActivity {
         super.selectHistoryGraph(userName, skillNumber, skillName);
         mIsShowingHighScores = false;
         // update the main content by replacing fragments
-        mCurrentFragment = new HistoryGraphFragment();
+        mCurrentFragment = new UserProgressFragment();
         Bundle args = new Bundle();
         args.putString(ARG_USERNAME, userName);
         args.putInt(ARG_SKILL_NUMBER, skillNumber);
@@ -244,7 +221,7 @@ public class MainActivity extends DrawerHandlingActivity {
         mCurrentFragment.setArguments(args);
 
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.content_frame, mCurrentFragment, FRAGMENT_TAG).commit();
+        fragmentManager.beginTransaction().replace(R.id.content_frame, mCurrentFragment, FRAGMENT_TAG).commitAllowingStateLoss();
         setTitle(userName);
     }
 
@@ -259,9 +236,5 @@ public class MainActivity extends DrawerHandlingActivity {
             return mCurrentFragment.canScrollUp();
         }
         return true;
-    }
-
-    private class CustomHeaderTransformer extends DefaultHeaderTransformer {
-
     }
 }
