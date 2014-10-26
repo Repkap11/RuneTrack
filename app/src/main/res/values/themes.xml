@@ -1,45 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- For all versions-->
-    <style name="AppTheme.Base" parent="Theme.AppCompat.Light.DarkActionBar">
-        <item name="colorPrimary">@color/colorPrimary</item>
-        <item name="colorPrimaryDark">@color/colorPrimary</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="windowActionBar">false</item>
-        <item name="ptrHeaderStyle">@style/Widget.Custom.PtrHeader</item>
-    </style>
+	<!-- For all versions-->
+	<style name="AppTheme.Base" parent="Theme.AppCompat.Light.DarkActionBar">
+		<item name="colorPrimary">@color/colorPrimary</item>
+		<item name="colorPrimaryDark">@color/colorPrimary</item>
+		<item name="android:windowNoTitle">true</item>
+		<item name="windowActionBar">false</item>
+		<item name="ptrHeaderStyle">@style/Widget.Custom.PtrHeader</item>
+	</style>
+	<!-- For fallback versions-->
+	<style name="AppTheme" parent="AppTheme.Base"></style>
 
-    <!-- For fallback versions-->
-    <style name="AppTheme" parent="AppTheme.Base">
+	<style name="LeftSideBarTheme" parent="AppTheme.Base"></style>
 
-    </style>
-
-
-    <style name="LeftSideBarTheme" parent="AppTheme.Base">
-    </style>
-
-
-    <!--
-      ptrHeaderStyle above refers to this style which contains all of the
-      DefaultHeaderTransformer customization values. The name and parent
-      can be anything, but only the attributes defined in
-      library/res/attrs.xml are actually read in.
-    -->
-    <style name="Widget.Custom.PtrHeader" parent="android:Widget">
-        <!-- The background of the header view -->
-
-        <!-- The height of the header view. Please note, only set if in you really need to -->
-        <item name="ptrHeaderHeight">?attr/actionBarSize</item>
-
-        <!-- Color to tint the progress bar -->
-        <item name="ptrProgressBarColor">@color/colorPrimaryDark</item>
-
-        <item name="ptrHeaderBackground">@color/colorPrimary</item>
-
-        <!-- Style of the Progress Bar. Values are either: inside or outside -->
-        <item name="ptrProgressBarStyle">outside</item>
-
-        <!-- The strings to be displayed at the various states -->
-        <item name="ptrPullText">@string/pull_to_refresh</item>
-    </style>
+	<style name="Widget.Custom.PtrHeader" parent="android:Widget">
+		<!-- The background of the header view -->
+		<!-- The height of the header view. Please note, only set if in you really need to -->
+		<item name="ptrHeaderHeight">?attr/actionBarSize</item>
+		<!-- Color to tint the progress bar -->
+		<item name="ptrProgressBarColor">@color/colorPrimaryDark</item>
+		<item name="ptrHeaderBackground">@color/colorPrimary</item>
+		<!-- Style of the Progress Bar. Values are either: inside or outside -->
+		<item name="ptrProgressBarStyle">outside</item>
+		<!-- The strings to be displayed at the various states -->
+		<item name="ptrPullText">@string/pull_to_refresh</item>
+	</style>
 </resources>

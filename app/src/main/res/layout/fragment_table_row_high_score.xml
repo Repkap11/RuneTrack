@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <com.repkap11.runetrack.TableEntryView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:id="@+id/text_lin_layout"
-    android:layout_width="fill_parent"
-    android:layout_height="wrap_content"
-    app:numberOfTextColumns="4"
-    android:layout_centerVertical="true" />
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:id="@+id/text_lin_layout"
+	android:layout_width="fill_parent"
+	android:layout_height="wrap_content"
+	android:layout_centerVertical="true"
+	app:numberOfTextColumns="4"/>
