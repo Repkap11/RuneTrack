@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<merger version="2" >
-
-    <dataSet config="main" >
-        <source path="/mnt/sda3/Users/Paul/android_stuido/projects/Runetrack/app/src/androidTest/assets" />
-    </dataSet>
-
-</merger>

@@ -1,9 +1,0 @@
-<component name="libraryTable">
-  <library name="GraphView">
-    <CLASSES>
-      <root url="jar://$PROJECT_DIR$/app/libs/GraphView.jar!/" />
-    </CLASSES>
-    <JAVADOC />
-    <SOURCES />
-  </library>
-</component>

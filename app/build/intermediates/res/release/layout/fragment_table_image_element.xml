@@ -1,8 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ImageView xmlns:android="http://schemas.android.com/apk/res/android"
-	android:id="@+id/fragment_table_skill_image"
-	android:layout_width="wrap_content"
-	android:layout_height="wrap_content"
-	android:cropToPadding="true"
-	android:padding="0.5dp"
-	android:scaleType="centerInside"/><!-- From: file:/mnt/sda3/Users/Paul/android_stuido/projects/Runetrack/app/src/main/res/layout/fragment_table_image_element.xml -->

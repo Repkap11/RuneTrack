@@ -1,9 +1,0 @@
-<?xml version="1.0" encoding="utf-8"?>
-<TextView xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/skill_text"
-    android:layout_width="wrap_content"
-    android:layout_height="fill_parent"
-    android:contentDescription="Temp Text"
-    android:maxLines="1"
-    android:textColor="@color/dark_text_color"
-    android:typeface="monospace" />
