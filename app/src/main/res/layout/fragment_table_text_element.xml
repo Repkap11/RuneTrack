@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<TextView xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/skill_text"
+	style="@android:style/Theme.Holo"
+	android:layout_width="wrap_content"
+	android:layout_height="fill_parent"
+	android:background="@drawable/line_background_left"
+	android:contentDescription="Temp Text"
+	android:gravity="right"
+	android:maxLines="1"
+	android:paddingRight="1dp"
+	android:textColor="@color/dark_text_color"
+	android:theme="@style/android:Theme.Holo"
+	android:typeface="monospace"/>

@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ViewSwitcher xmlns:android="http://schemas.android.com/apk/res/android"
+	android:id="@+id/switcher_outside"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="@color/user_profile_background_color">
+
+	<ProgressBar
+		android:id="@+id/progressbar"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_gravity="center"/>
+
+	<uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout
+		android:id="@+id/swipe_container"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent">
+
+		<ViewSwitcher
+			android:id="@+id/switcher_inside"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent">
+
+			<ListView
+				android:id="@+id/content_error_message"
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:contentDescription="@string/pullable_to_refresh_view"/>
+
+			<com.repkap11.runetrack.SwipeRefreshLoadFailingView
+				android:layout_width="match_parent"
+				android:layout_height="match_parent"
+				android:padding="4dp"/>
+		</ViewSwitcher>
+	</uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout>
+</ViewSwitcher>
