@@ -6,25 +6,40 @@
  */
 package com.repkap11.runetrack.fragments;
 
-import android.content.*;
-import android.graphics.*;
-import android.graphics.drawable.*;
-import android.os.*;
-import android.support.v4.app.*;
-import android.text.*;
-import android.text.style.*;
-import android.util.*;
-import android.view.*;
-import android.widget.*;
+import android.app.Fragment;
+import android.content.Context;
+import android.graphics.Paint;
+import android.graphics.Point;
+import android.graphics.Typeface;
+import android.graphics.drawable.Drawable;
+import android.os.Build;
+import android.os.Bundle;
+import android.os.Handler;
+import android.os.Parcelable;
+import android.text.SpannableStringBuilder;
+import android.text.Spanned;
+import android.text.style.URLSpan;
+import android.util.Log;
+import android.view.Display;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.view.WindowManager;
+import android.widget.ArrayAdapter;
+import android.widget.ListView;
+import android.widget.TextView;
+import android.widget.ViewSwitcher;
 
-import com.repkap11.runetrack.*;
+import com.repkap11.runetrack.DataTable;
+import com.repkap11.runetrack.DataTableBounds;
+import com.repkap11.runetrack.MainActivity;
 import com.repkap11.runetrack.R;
 
-import java.util.*;
+import java.util.ArrayList;
 
-import uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout;
-import uk.co.senab.actionbarpulltorefresh.library.*;
-import uk.co.senab.actionbarpulltorefresh.library.listeners.*;
+import uk.co.senab.actionbarpulltorefresh.library.ActionBarPullToRefresh;
+import uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout;
+import uk.co.senab.actionbarpulltorefresh.library.listeners.OnRefreshListener;
 
 public abstract class FragmentBase extends Fragment implements OnRefreshListener {
 protected static final int SWITCHED_VIEW_SPINNER = 0;
@@ -118,7 +133,12 @@ public abstract void reloadData();
 public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 	mSavedInstanceState = savedInstanceState;
 	final ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_content_base, container, false);
-	rootView.findViewById(R.id.content_error_message).setBackground(mDrawable);
+	View view = rootView.findViewById(R.id.content_error_message);
+	if(Build.VERSION.SDK_INT >= 16) {
+		view.setBackground(mDrawable);
+	}else {
+		view.setBackgroundDrawable(mDrawable);
+	}
 	switcherOutside = (ViewSwitcher) rootView.findViewById(R.id.switcher_outside);
 	switcherInside = (ViewSwitcher) rootView.findViewById(R.id.switcher_inside);
 	mPullToRefreshLayout = (PullToRefreshLayout) rootView.findViewById(R.id.swipe_container);

@@ -1,17 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <!-- For v21 versions-->
-    <style name="AppTheme" parent="AppTheme.Base">
+	<!-- For v21 versions-->
+	<style name="AppTheme.Base" parent="android:Theme.Material.Light">
+		<item name="android:windowContentTransitions">true</item>
+		<item name="android:windowAllowEnterTransitionOverlap">true</item>
+		<item name="android:windowAllowReturnTransitionOverlap">true</item>
+		<item name="android:windowSharedElementEnterTransition">@android:transition/move</item>
+		<item name="android:windowSharedElementExitTransition">@android:transition/move</item>
+		<item name="android:statusBarColor">@color/colorPrimaryDark</item>
+		<item name="android:colorPrimary">@color/colorPrimary</item>
+		<item name="android:colorPrimaryDark">@color/colorPrimary</item>
+		<item name="android:actionBarStyle">@style/MaterialActionBarStyle</item>
+	</style>
 
-        <item name="android:windowContentTransitions">true</item>
-        <item name="android:windowAllowEnterTransitionOverlap">true</item>
-        <item name="android:windowAllowReturnTransitionOverlap">true</item>
-        <item name="android:windowSharedElementEnterTransition">@android:transition/move</item>
-        <item name="android:windowSharedElementExitTransition">@android:transition/move</item>
-        <item name="android:statusBarColor">@color/colorPrimaryDark</item>
+	<style name="MaterialActionBarStyle" parent="@android:style/Widget.Material.Light.ActionBar">
+		<item name="android:background">@color/colorPrimary</item>
+		<item name="android:displayOptions">showHome|showTitle</item>
+		<item name="android:icon">@android:color/transparent</item>
+	</style>
 
-    </style>
-
-    <style name="LeftSideBarTheme" parent="AppTheme.Base">
-    </style>
+	<style name="Widget.Custom.PtrHeader" parent="android:Widget">
+		<!-- Color to tint the progress bar -->
+		<item name="ptrProgressBarColor">@color/colorPrimaryDark</item>
+		<item name="ptrHeaderBackground">@color/colorPrimary</item>
+		<!-- Style of the Progress Bar. Values are either: inside or outside -->
+		<item name="ptrProgressBarStyle">outside</item>
+		<!-- The strings to be displayed at the various states -->
+		<item name="ptrPullText">@string/pull_to_refresh</item>
+	</style>
 </resources>

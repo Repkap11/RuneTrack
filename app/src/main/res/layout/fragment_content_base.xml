@@ -11,7 +11,7 @@
 		android:layout_height="wrap_content"
 		android:layout_gravity="center"/>
 
-	<uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout
+	<uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout
 		android:id="@+id/swipe_container"
 		android:layout_width="match_parent"
 		android:layout_height="match_parent">
@@ -32,5 +32,5 @@
 				android:layout_height="match_parent"
 				android:padding="4dp"/>
 		</ViewSwitcher>
-	</uk.co.senab.actionbarpulltorefresh.extras.actionbarcompat.PullToRefreshLayout>
+	</uk.co.senab.actionbarpulltorefresh.library.PullToRefreshLayout>
 </ViewSwitcher>

@@ -1,23 +1,38 @@
 package com.repkap11.runetrack;
 
-import android.app.*;
-import android.content.*;
-import android.content.res.*;
-import android.os.*;
-import android.support.v4.view.*;
-import android.support.v4.widget.*;
-import android.support.v7.app.*;
-import android.support.v7.widget.Toolbar;
-import android.text.*;
-import android.util.*;
-import android.view.*;
-import android.widget.*;
+import android.app.Activity;
+import android.app.AlertDialog;
+import android.content.DialogInterface;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
+import android.os.Build;
+import android.os.Bundle;
+import android.support.v4.view.GravityCompat;
+import android.support.v4.widget.DrawerLayout;
+import android.support.v7.app.ActionBarDrawerToggle;
+import android.widget.Toolbar;
+import android.text.InputType;
+import android.util.Log;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.BaseExpandableListAdapter;
+import android.widget.EditText;
+import android.widget.ExpandableListView;
+import android.widget.ListView;
+import android.widget.TextView;
 
-import org.json.*;
+import org.json.JSONArray;
+import org.json.JSONException;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 
-public abstract class DrawerHandlingActivity extends ActionBarActivity {
+public abstract class DrawerHandlingActivity extends Activity {
 public static final String DRAWER_IS_USER = "DRAWER_IS_USER";
 public static final String DRAWER_IS_RUNETRACK_HIGH_SCORES = "DRAWER_IS_RUNETRACK_HIGH_SCORES";
 public static final String DRAWER_IS_ADD_USER = "DRAWER_IS_ADD_USER";
@@ -28,7 +43,6 @@ private ActionBarDrawerToggle mDrawerToggle;
 private List<String> mUserNamesToShow;
 private ExpandableListView mDrawerList;
 private BaseExpandableListAdapter mAdapter;
-private Toolbar mToolbar;
 
 @Override
 protected void onCreate(Bundle savedInstanceState) {
@@ -43,10 +57,6 @@ public void onConfigurationChanged(Configuration newConfig) {
 }
 
 protected void onCreateAfterSetContentView(Bundle savedInstanceState) {
-	mToolbar = (Toolbar) findViewById(R.id.toolbar);
-	if(mToolbar != null) {
-		setSupportActionBar(mToolbar);
-	}
 	mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer);
 	mDrawerList = (ExpandableListView) findViewById(R.id.left_drawer);
 	// set a custom shadow that overlays the main content when the drawer
@@ -145,14 +155,12 @@ protected void onCreateAfterSetContentView(Bundle savedInstanceState) {
 	mDrawerList.setOnChildClickListener(new DrawerChildClickListener());
 	mDrawerList.setOnItemLongClickListener(new DrawerGroupLongClickListener());
 	mDrawerList.setOnGroupClickListener(new DrawerGroupClickListener());
-	if(getSupportActionBar() != null) {
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-		getSupportActionBar().setHomeButtonEnabled(true);
+	if(getActionBar() != null) {
+		getActionBar().setDisplayHomeAsUpEnabled(true);
+		getActionBar().setHomeButtonEnabled(true);
 	}
-
 	mDrawerToggle = new ActionBarDrawerToggle(this, // host Activity
 			mDrawerLayout, // DrawerLayout object
-			mToolbar, // nav drawer image to replace 'Up' caret
 			R.string.drawer_open, // / "open drawer" description for
 			// accessibility
 			R.string.drawer_close // "close drawer" description for

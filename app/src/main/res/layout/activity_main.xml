@@ -5,7 +5,7 @@
     android:layout_height="fill_parent"
     android:orientation="vertical">
 
-    <include layout="@layout/activity_main_toolbar" />
+    <!--<include layout="@layout/activity_main_toolbar" /> -->
 
     <android.support.v4.widget.DrawerLayout
         android:id="@+id/drawer"
@@ -21,7 +21,6 @@
             android:orientation="horizontal" />
 
         <ExpandableListView
-            style="@style/LeftSideBarTheme"
             android:id="@+id/left_drawer"
             android:layout_width="240dp"
             android:layout_height="match_parent"

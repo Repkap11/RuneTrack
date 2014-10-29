@@ -1,17 +1,27 @@
 package com.repkap11.runetrack;
 
-import android.content.*;
-import android.os.*;
-import android.support.v4.app.*;
-import android.support.v4.view.*;
-import android.support.v7.widget.*;
-import android.text.*;
-import android.util.*;
-import android.view.*;
-import android.view.View.*;
-import android.view.inputmethod.*;
+import android.app.FragmentManager;
+import android.content.Context;
+import android.os.Build;
+import android.os.Bundle;
+import android.text.InputType;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
+import android.view.View;
+import android.view.View.OnFocusChangeListener;
+import android.view.ViewGroup;
+import android.view.inputmethod.InputMethodManager;
+import android.widget.ImageView;
+import android.widget.SearchView;
+import android.widget.Toast;
 
-import com.repkap11.runetrack.fragments.*;
+import com.repkap11.runetrack.fragments.FragmentBase;
+import com.repkap11.runetrack.fragments.RuneTrackHighScoresFragment;
+import com.repkap11.runetrack.fragments.UserProfileFragment;
+import com.repkap11.runetrack.fragments.UserProgressFragment;
+import com.repkap11.runetrack.fragments.XpDistributionChartFragment;
 
 public class MainActivity extends DrawerHandlingActivity {
 
@@ -37,7 +47,7 @@ protected void onCreate(Bundle savedInstanceState) {
 	mTitle = getTitle();
 
 	if(savedInstanceState != null) {
-		mCurrentFragment = (FragmentBase) getSupportFragmentManager().findFragmentByTag(FRAGMENT_TAG);
+		mCurrentFragment = (FragmentBase) getFragmentManager().findFragmentByTag(FRAGMENT_TAG);
 		mUserName = savedInstanceState.getString(ARG_USERNAME);
 		mIsShowingHighScores = savedInstanceState.getBoolean(ARG_IS_SHOWING_HIGHSCORES, mIsShowingHighScores);
 	}else {
@@ -82,7 +92,7 @@ public void selectRuneTrackHighScores(String skillName, int pageNumber) {
 	args.putString(ARG_SKILL_NAME, skillName);
 
 	mCurrentFragment.setArguments(args);
-	FragmentManager fragmentManager = getSupportFragmentManager();
+	FragmentManager fragmentManager = getFragmentManager();
 	fragmentManager.beginTransaction().replace(R.id.content_frame, mCurrentFragment, FRAGMENT_TAG).commitAllowingStateLoss();
 	setTitle(getResources().getString(R.string.runetrack_highscores));
 }
@@ -98,7 +108,7 @@ public void selectPiChart(String userName) {
 	args.putString(ARG_USERNAME, userName);
 	mCurrentFragment.setArguments(args);
 
-	FragmentManager fragmentManager = getSupportFragmentManager();
+	FragmentManager fragmentManager = getFragmentManager();
 	fragmentManager.beginTransaction().replace(R.id.content_frame, mCurrentFragment, FRAGMENT_TAG).commitAllowingStateLoss();
 	setTitle(userName);
 }
@@ -115,7 +125,7 @@ public void selectHistoryGraph(String userName, int skillNumber, String skillNam
 	args.putString(ARG_SKILL_NAME, skillName);
 	mCurrentFragment.setArguments(args);
 
-	FragmentManager fragmentManager = getSupportFragmentManager();
+	FragmentManager fragmentManager = getFragmentManager();
 	fragmentManager.beginTransaction().replace(R.id.content_frame, mCurrentFragment, FRAGMENT_TAG).commitAllowingStateLoss();
 	setTitle(userName);
 }
@@ -131,7 +141,7 @@ public void selectUserProfileByName(String userName) {
 	args.putString(ARG_USERNAME, userName);
 	mCurrentFragment.setArguments(args);
 
-	FragmentManager fragmentManager = getSupportFragmentManager();
+	FragmentManager fragmentManager = getFragmentManager();
 	fragmentManager.beginTransaction().replace(R.id.content_frame, mCurrentFragment, FRAGMENT_TAG).commitAllowingStateLoss();
 
 	// update selected item and title, then close the drawer
@@ -150,8 +160,16 @@ public boolean onCreateOptionsMenu(final Menu menu) {
 	MenuInflater inflater = getMenuInflater();
 	inflater.inflate(R.menu.main, menu);
 	MenuItem searchItem = menu.findItem(R.id.action_bar_search_user);
-	final SearchView search = (SearchView) MenuItemCompat.getActionView(searchItem);
-
+	final SearchView search = (SearchView) searchItem.getActionView();
+	if (Build.VERSION.SDK_INT < 21) {
+		try {
+			int searchImgId = getResources().getIdentifier("android:id/search_button", null, null);
+			ImageView v = (ImageView) search.findViewById(searchImgId);
+			v.setImageResource(R.drawable.ic_menu_search_holo_light);
+		} catch(Exception e) {
+			Toast.makeText(this, "Unable to set custom search icon", Toast.LENGTH_SHORT).show();
+		}
+	}
 	// getCurrentFocus().clearFocus();
 	// search.clearFocus();
 	// search.setFocusable(true);
@@ -165,7 +183,7 @@ public boolean onCreateOptionsMenu(final Menu menu) {
 			// Do something
 			selectUserProfileByName(query);
 			MenuItem searchItem = menu.findItem(R.id.action_bar_search_user);
-			SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+			SearchView searchView = (SearchView) searchItem.getActionView();
 			searchView.onActionViewCollapsed();
 			return true;
 		}
@@ -182,7 +200,7 @@ public boolean onCreateOptionsMenu(final Menu menu) {
 			Log.e(TAG, "Focus Changed");
 			if(!hasFocus) {
 				MenuItem searchItem = menu.findItem(R.id.action_bar_search_user);
-				SearchView searchView = (SearchView) MenuItemCompat.getActionView(searchItem);
+				SearchView searchView = (SearchView) searchItem.getActionView();
 				searchView.onActionViewCollapsed();
 			}
 		}
@@ -198,14 +216,14 @@ public boolean onPrepareOptionsMenu(Menu menu) {
 	// If the nav drawer is open, hide action items related to the content
 	// view
 	MenuItem searchItem = menu.findItem(R.id.action_bar_search_user);
-	MenuItemCompat.collapseActionView(searchItem);
+	searchItem.collapseActionView();
 	return super.onPrepareOptionsMenu(menu);
 }
 
 @Override
 public void setTitle(CharSequence title) {
 	mTitle = title;
-	getSupportActionBar().setTitle(mTitle);
+	getActionBar().setTitle(mTitle);
 }
 
 private void showInputMethod(View view) {

@@ -117,7 +117,7 @@ public boolean canScrollUp() {
 @Override
 public Drawable onInflateContentView(ViewGroup container) {
 	LayoutInflater inflater = LayoutInflater.from(this.getActivity());
-	TextDrawable result = new TextDrawable(getResources().getString(R.string.history_graph_download_error_message));
+	TextDrawable result = new TextDrawable(getResources(),R.string.history_graph_download_error_message);
 	View rootView = inflater.inflate(R.layout.fragment_content_shared_list, container, true);
 	userName = getArguments().getString(MainActivity.ARG_USERNAME);
 	skillName = getArguments().getString(MainActivity.ARG_SKILL_NAME);

@@ -101,7 +101,7 @@ public boolean canScrollUp() {
 public Drawable onInflateContentView(ViewGroup container) {
 	LayoutInflater inflater = LayoutInflater.from(this.getActivity());
 	Log.e(TAG, "On create view called userprofile fragment");
-	TextDrawable result = new TextDrawable(getResources().getString(R.string.user_profile_download_error_message));
+	TextDrawable result = new TextDrawable(getResources(),R.string.user_profile_download_error_message);
 	View rootView = inflater.inflate(R.layout.fragment_content_shared_list, container, true);
 	userName = getArguments().getString(MainActivity.ARG_USERNAME);
 	mList = ((ListView) rootView.findViewById(R.id.fragment_content_shared_list_list));

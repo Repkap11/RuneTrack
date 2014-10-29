@@ -22,7 +22,6 @@ private MainActivity mActivity;
 private Paint paint = new Paint(Paint.ANTI_ALIAS_FLAG);
 private int[] colors;
 private String[] skillNames;
-;
 private Toast mToast;
 private int[] xpPerSkill;
 private float[] mDegrees;

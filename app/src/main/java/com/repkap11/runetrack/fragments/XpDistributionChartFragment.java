@@ -115,7 +115,7 @@ public boolean canScrollUp() {
 
 @Override
 public Drawable onInflateContentView(ViewGroup container) {
-	TextDrawable result = new TextDrawable(getResources().getString(R.string.xp_pi_chart_download_error_message));
+	TextDrawable result = new TextDrawable(getResources(),R.string.xp_pi_chart_download_error_message);
 	LayoutInflater inflater = LayoutInflater.from(this.getActivity());
 	userName = getArguments().getString(MainActivity.ARG_USERNAME);
 	skillNumber = getArguments().getInt(MainActivity.ARG_SKILL_NUMBER);

@@ -104,7 +104,7 @@ public boolean canScrollUp() {
 public Drawable onInflateContentView(ViewGroup container) {
 	LayoutInflater inflater = LayoutInflater.from(this.getActivity());
 	//TODO change to its own layout?
-	TextDrawable result = new TextDrawable(getResources().getString(R.string.highscores_download_error_message));
+	TextDrawable result = new TextDrawable(getResources(),R.string.highscores_download_error_message);
 	View rootView = inflater.inflate(R.layout.fragment_content_shared_list, container, true);
 	skillName = getArguments().getString(MainActivity.ARG_SKILL_NAME);
 	pageNumber = getArguments().getInt(MainActivity.ARG_PAGE_NUMBER);

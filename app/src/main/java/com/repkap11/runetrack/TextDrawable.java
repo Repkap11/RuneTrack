@@ -1,20 +1,23 @@
 package com.repkap11.runetrack;
 
+import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.*;
 import android.graphics.drawable.*;
+import android.util.TypedValue;
 
 public class TextDrawable extends Drawable {
 
 private final String text;
 private final Paint paint;
 
-public TextDrawable(String text) {
+public TextDrawable(Resources resources,int textID) {
 
-	this.text = text;
-
+	this.text = resources.getString(textID);
 	this.paint = new Paint();
 	paint.setColor(Color.BLACK);
-	paint.setTextSize(40f);
+	float px = TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, 14, resources.getDisplayMetrics());
+	paint.setTextSize(px);
 	paint.setAntiAlias(true);
 	paint.setFakeBoldText(false);
 	//paint.setShadowLayer(6f, 0, 0, Color.BLACK);
