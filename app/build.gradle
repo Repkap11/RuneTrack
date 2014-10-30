@@ -11,12 +11,35 @@ android {
         versionCode 4
         versionName "4.0"
     }
-    buildTypes {
+    signingConfigs {
         release {
-            runProguard false
-            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+            try {
+                storeFile file("RuneTrackKeyStore")
+                storePassword KEYSTORE_PASSWORD
+                keyAlias "repkap11"
+                keyPassword KEY_PASSWORD
+            }
+            catch (ex) {
+                throw new InvalidUserDataException("You should define KEYSTORE_PASSWORD and KEY_PASSWORD in gradle.properties.")
+            }
         }
     }
+    buildTypes {
+        release {
+            debuggable = false
+            signingConfig signingConfigs.release
+            runProguard true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debugRelease.initWith(buildTypes.release)
+        debugRelease {
+            debuggable = true
+            signingConfig signingConfigs.release
+            runProguard true
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules-debug.pro'
+        }
+    }
+
 }
 
 dependencies {

@@ -54,10 +54,10 @@ public static final String PARAM_USER_PROFILE_ERROR_CODE = "PARAM_USER_PROFILE_E
 
 public static final String PARAM_HIGH_SCORES_ENTRIES = "PARAM_HIGH_SCORES_ENTRIES";
 private static final int TIMEOUT = 5 * 1000;
-private static final String TAG = "DownloadIntentService";
+private static final String TAG = DownloadIntentService.class.getSimpleName();
 
 public DownloadIntentService() {
-	super("UserNameInfoDownloader");
+	super(TAG);
 	Log.e(TAG, "DownloadIntentService constructed");
 }
 

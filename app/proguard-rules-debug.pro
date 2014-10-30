@@ -15,5 +15,7 @@
 #-keepclassmembers class fqcn.of.javascript.interface.for.webview {
 #   public *;
 #}
+-renamesourcefileattribute SourceFile
+-keepattributes SourceFile,LineNumberTable
 -keeppackagenames org.jsoup.*
--printmapping RuneTrackRelease.map
+-printmapping RuneTrackReleaseDebug.map
