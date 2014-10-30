@@ -100,11 +100,6 @@ public void onDetach() {
 }
 
 @Override
-protected boolean isWaitingForData() {
-	return false;
-}
-
-@Override
 public void reloadData() {
 	((MainActivity) this.getActivity()).selectHistoryGraph(userName, skillNumber, skillName);
 }

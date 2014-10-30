@@ -6,32 +6,42 @@
  */
 package com.repkap11.runetrack;
 
-import android.app.*;
-import android.content.*;
-import android.graphics.*;
-import android.os.*;
-import android.util.*;
+import android.app.IntentService;
+import android.content.Intent;
+import android.graphics.Color;
+import android.os.Parcelable;
+import android.util.Log;
 
-import org.json.*;
-import org.jsoup.*;
-import org.jsoup.nodes.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
+import org.jsoup.nodes.Element;
+import org.jsoup.nodes.Node;
 
-import java.io.*;
-import java.net.*;
-import java.nio.charset.*;
-import java.util.*;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.Charset;
+import java.util.ArrayList;
+import java.util.Arrays;
 
 /**
  * @author paul
  */
 public class DownloadIntentService extends IntentService {
 
-public static final String PARAM_USERNAME = "PARAM_USERNAME";
-public static final String PARAM_SKILL_NUMBER = "PARAM_SKILL_NUMBER";
+public static final String PARAM_WHICH_DATA = "PARAM_WHICH_DATA";
+//Request types
 public static final String PARAM_USER_PROFILE_TABLE = "PARAM_USER_PROFILE_TABLE";
 public static final String PARAM_HISTORY_GRAPH = "PARAM_HISTORY_GRAPH";
 public static final String PARAM_XP_PI_CHART = "PARAM_XP_PI_CHART";
-public static final String PARAM_WHICH_DATA = "PARAM_WHICH_DATA";
+public static final String PARAM_RUNETRACK_HIGH_SCORES = "PARAM_RUNETRACK_HIGH_SCORES";
+
+//Request spesific value
+public static final String PARAM_USERNAME = "PARAM_USERNAME";
+public static final String PARAM_SKILL_NUMBER = "PARAM_SKILL_NUMBER";
 public static final String PARAM_USER_PROFILE_TABLE2 = "PARAM_USER_PROFILE_TABLE2";
 public static final String PARAM_XP_COLORS = "PARAM_XP_COLORS";
 public static final String PARAM_XP_PER_SKILL = "PARAM_XP_DEGREES";
@@ -40,7 +50,8 @@ public static final String PARAM_XP_USER_GAINED_NO_XP = "PARAM_XP_USER_GAINED_NO
 public static final String PARAM_PROGRESS_ENTRIES = "PARAM_PROGRESS_ENTRIES";
 public static final String PARAM_SKILL_NAME = "PARAM_SKILL_NAME";
 public static final String PARAM_PAGE_NUMBER = "PARAM_PAGE_NUMBER";
-public static final String PARAM_RUNETRACK_HIGH_SCORES = "PARAM_RUNETRACK_HIGH_SCORES";
+public static final String PARAM_USER_PROFILE_ERROR_CODE = "PARAM_USER_PROFILE_ERROR_CODE";
+
 public static final String PARAM_HIGH_SCORES_ENTRIES = "PARAM_HIGH_SCORES_ENTRIES";
 private static final int TIMEOUT = 5 * 1000;
 private static final String TAG = "DownloadIntentService";
@@ -48,7 +59,6 @@ private static final String TAG = "DownloadIntentService";
 public DownloadIntentService() {
 	super("UserNameInfoDownloader");
 	Log.e(TAG, "DownloadIntentService constructed");
-
 }
 
 @Override
@@ -67,9 +77,16 @@ public void onHandleIntent(Intent intent) {
 	Log.e(TAG, "Done handling download intent");
 }
 
+public static final int USER_PROFILE_ERROR_CODE_SUCCESS = 0;
+public static final int USER_PROFILE_ERROR_CODE_UNKNOWN = 1;
+public static final int USER_PROFILE_ERROR_CODE_NOT_ON_RS_HIGHSCORES = 2;
+public static final int USER_PROFILE_ERROR_CODE_NOT_ENOUGH_VIEWS = 3;
+public static final int USER_PROFILE_ERROR_CODE_RUNETRACK_DOWN = 4;
+
 private void doUserProfileTable(Intent intent) {
 	String userName = intent.getStringExtra(PARAM_USERNAME);
 	ArrayList<DataTable> skills = new ArrayList<DataTable>();
+	int errorCode = USER_PROFILE_ERROR_CODE_RUNETRACK_DOWN;
 	try {
 		userName = URLEncoder.encode(userName, Charset.defaultCharset().name());
 	} catch(UnsupportedEncodingException e1) {
@@ -80,23 +97,45 @@ private void doUserProfileTable(Intent intent) {
 		Connection c = Jsoup.connect("http://runetrack.com/profile.php?user=" + userName);
 		c.timeout(TIMEOUT);
 		Document d = c.get();
-		Element ele = d.getElementsByClass("profile_table2").first().child(0);
-
-		for(int i = 2; i < ele.children().size(); i++) {// For each
-			// skill
-			// Log.e(TAG,"Loop iteration "+i);
-			Element skill = ele.child(i);
-			String skillName = skill.child(0).child(0).attr("title").replace(String.valueOf((char) 160), "");
-			String level = skill.child(1).text().replace(String.valueOf((char) 160), "");
-			String xp = skill.child(2).text().replace(String.valueOf((char) 160), "");
-			String rank = skill.child(3).text().replace(String.valueOf((char) 160), "");
-			String todayLevel = skill.child(4).text().replace(String.valueOf((char) 160), "");
-			String todayxp = skill.child(5).text().replace(String.valueOf((char) 160), "");
-			String weekLevel = skill.child(6).text().replace(String.valueOf((char) 160), "");
-			String weekxp = skill.child(7).text().replace(String.valueOf((char) 160), "");
-			skills.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[]{skillName, level, xp, rank, todayLevel, todayxp, weekLevel, weekxp}))));
+		errorCode = USER_PROFILE_ERROR_CODE_UNKNOWN;
+		try {
+			Element tableElement = d.getElementsByClass("profile_table2").first().child(0);
+			for(int i = 2; i < tableElement.children().size(); i++) {// For each
+				// skill
+				// Log.e(TAG,"Loop iteration "+i);
+				Element skill = tableElement.child(i);
+				String skillName = skill.child(0).child(0).attr("title").replace(String.valueOf((char) 160), "");
+				String level = skill.child(1).text().replace(String.valueOf((char) 160), "");
+				String xp = skill.child(2).text().replace(String.valueOf((char) 160), "");
+				String rank = skill.child(3).text().replace(String.valueOf((char) 160), "");
+				String todayLevel = skill.child(4).text().replace(String.valueOf((char) 160), "");
+				String todayxp = skill.child(5).text().replace(String.valueOf((char) 160), "");
+				String weekLevel = skill.child(6).text().replace(String.valueOf((char) 160), "");
+				String weekxp = skill.child(7).text().replace(String.valueOf((char) 160), "");
+				skills.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[]{skillName, level, xp, rank, todayLevel, todayxp, weekLevel, weekxp}))));
+			}
+			errorCode = USER_PROFILE_ERROR_CODE_SUCCESS;
+		} catch(Exception e) {
+			Element body = d.body();
+			Element parent = body.child(0).child(8);
+			if(parent.children().size() <= 6) {
+				Node node = parent.child(0).child(0).childNode(1);
+				String nodeString = node.toString();
+				Element element = body.child(0).child(8).child(0).child(0).child(1);
+				Log.e(TAG, nodeString);
+				errorCode = USER_PROFILE_ERROR_CODE_NOT_ENOUGH_VIEWS;
+			}else {
+				Node node = parent.childNode(2);
+				String text = node.toString().replace("&nbsp;", "");
+				text = text.replace("<b>", "").replace("</b>", "").trim();
+				Log.e(TAG, text);
+				errorCode = USER_PROFILE_ERROR_CODE_NOT_ON_RS_HIGHSCORES;
+				//String nodes = node.toString();
+				//Element element =  body.child(0).child(8).child(0).child(0).child(1);
+			}
 		}
 	} catch(Exception e) {
+		Log.e(TAG, "Exception:" + e.getMessage());
 		e.printStackTrace();
 		Log.e(TAG, "Caught exception downloading, settings skills to empty");
 		skills = new ArrayList<DataTable>();
@@ -105,6 +144,7 @@ private void doUserProfileTable(Intent intent) {
 	broadcastIntent.setAction(PARAM_USERNAME);
 	broadcastIntent.addCategory(Intent.CATEGORY_DEFAULT);
 	broadcastIntent.putExtra(PARAM_USERNAME, skills);
+	broadcastIntent.putExtra(PARAM_USER_PROFILE_ERROR_CODE, errorCode);
 	sendBroadcast(broadcastIntent);
 
 }

@@ -59,10 +59,10 @@ public void onResume() {
 		getActivity().registerReceiver(receiver, filter);
 
 	}else {
-
 		if(needsToShowDownloadFailure) {
 			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
 			if(needsToShowUserGainedNoXP) {
+
 				switcherUserGainedNoXP.setDisplayedChild(1);
 			}else {
 				switcherUserGainedNoXP.setDisplayedChild(0);
@@ -95,11 +95,6 @@ public void onPause() {
 public void onDetach() {
 	Log.e(TAG, "Fragment Detached");
 	super.onDetach();
-}
-
-@Override
-protected boolean isWaitingForData() {
-	return false;
 }
 
 @Override
@@ -167,9 +162,11 @@ public class ResponseReceiver extends BroadcastReceiver {
 			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
 			needsToShowDownloadFailure = true;
 			if(needsToShowUserGainedNoXP) {
+				setErrorMessage(R.string.xp_pi_chart_no_weekly_xp_error_message);
 				//switcherUserGainedNoXP.setDisplayedChild(1);
 			}else {
 				//switcherUserGainedNoXP.setDisplayedChild(0);
+				setErrorMessage(R.string.xp_pi_chart_download_error_message);
 			}
 			// Toast.makeText(UserProgressFragment.this.getActivity(),
 			// "Failure", Toast.LENGTH_SHORT).show();

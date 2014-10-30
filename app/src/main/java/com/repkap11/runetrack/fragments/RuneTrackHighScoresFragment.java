@@ -85,10 +85,6 @@ public void onDetach() {
 	super.onDetach();
 }
 
-@Override
-protected boolean isWaitingForData() {
-	return false;
-}
 
 @Override
 public void reloadData() {

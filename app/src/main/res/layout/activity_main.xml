@@ -1,43 +1,41 @@
 <?xml version="1.0" encoding="utf-8"?><!-- A DrawerLayout is intended to be used as the top-level content view using match_parent for both width and height to consume the full space available. -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="fill_parent"
-    android:layout_height="fill_parent"
-    android:orientation="vertical">
+	android:layout_width="fill_parent"
+	android:layout_height="fill_parent"
+	android:orientation="vertical">
 
-    <!--<include layout="@layout/activity_main_toolbar" /> -->
-
-    <android.support.v4.widget.DrawerLayout
-        android:id="@+id/drawer"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+	<android.support.v4.widget.DrawerLayout
+		android:id="@+id/drawer"
+		android:layout_width="match_parent"
+		android:layout_height="match_parent">
 
 
-        <LinearLayout
-            android:id="@+id/content_frame"
-            android:layout_width="fill_parent"
-            android:layout_height="fill_parent"
-            android:gravity="center"
-            android:orientation="horizontal" />
+		<LinearLayout
+			android:id="@+id/content_frame"
+			android:layout_width="fill_parent"
+			android:layout_height="fill_parent"
+			android:gravity="center"
+			android:orientation="horizontal" />
 
-        <ExpandableListView
-            android:id="@+id/left_drawer"
-            android:layout_width="240dp"
-            android:layout_height="match_parent"
-            android:layout_gravity="start"
-            android:background="@color/left_drawer_background_color"
-            android:cacheColorHint="@color/left_drawer_background_color"
-            android:childDivider="@android:color/transparent"
-            android:choiceMode="singleChoice"
-            android:divider="@android:color/transparent"
-            android:groupIndicator="@android:color/transparent">
+		<ExpandableListView
+			android:id="@+id/left_drawer"
+			android:layout_width="240dp"
+			android:layout_height="match_parent"
+			android:layout_gravity="start"
+			android:background="@color/left_drawer_background_color"
+			android:cacheColorHint="@color/left_drawer_background_color"
+			android:childDivider="@color/left_drawer_sub_divider_color"
+			android:choiceMode="singleChoice"
+			android:divider="@color/left_drawer_divider_color"
+			android:groupIndicator="@android:color/transparent">
 
-            <!--
-            android:childDivider="@color/left_drawer_sub_divider_color"
-            android:divider="@color/left_drawer_divider_color"
-             android:dividerHeight="1dp"
-            -->
-        </ExpandableListView>
+			<!--
+			android:childDivider="@color/left_drawer_sub_divider_color"
+			android:divider="@color/left_drawer_divider_color"
+			 android:dividerHeight="1dp"
+			-->
+		</ExpandableListView>
 
-    </android.support.v4.widget.DrawerLayout>
+	</android.support.v4.widget.DrawerLayout>
 </LinearLayout>

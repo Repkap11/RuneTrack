@@ -8,6 +8,7 @@ package com.repkap11.runetrack.fragments;
 
 import android.app.Fragment;
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Typeface;
@@ -34,6 +35,7 @@ import com.repkap11.runetrack.DataTable;
 import com.repkap11.runetrack.DataTableBounds;
 import com.repkap11.runetrack.MainActivity;
 import com.repkap11.runetrack.R;
+import com.repkap11.runetrack.TextDrawable;
 
 import java.util.ArrayList;
 
@@ -54,6 +56,7 @@ private Handler mHandler = new Handler();
 private ViewSwitcher switcherOutside;
 private ViewSwitcher switcherInside;
 private Drawable mDrawable;
+private View mErrorMessageView = null;
 
 public static DataTableBounds calculateLayoutSize(ArrayAdapter<Parcelable> arrayAdapter, Context context, ListView view) {
 	// Log.e(TAG, "Calculating Bounds");
@@ -121,23 +124,29 @@ public static void makeTextViewHyperlink(TextView tv) {
 	tv.setText(ssb, TextView.BufferType.SPANNABLE);
 }
 
-protected abstract boolean isWaitingForData();
-
 private void failureRetryOnClick(View v) {
 	reloadData();
 }
 
 public abstract void reloadData();
 
+protected void setErrorMessage(int textID){
+	((TextDrawable)mDrawable).setText(getResources(),textID);
+	if(Build.VERSION.SDK_INT >= 16) {
+		mErrorMessageView.setBackground(mDrawable);
+	}else {
+		mErrorMessageView.setBackgroundDrawable(mDrawable);
+	}
+}
 @Override
 public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
 	mSavedInstanceState = savedInstanceState;
 	final ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_content_base, container, false);
-	View view = rootView.findViewById(R.id.content_error_message);
+	mErrorMessageView = rootView.findViewById(R.id.content_error_message);
 	if(Build.VERSION.SDK_INT >= 16) {
-		view.setBackground(mDrawable);
+		mErrorMessageView.setBackground(mDrawable);
 	}else {
-		view.setBackgroundDrawable(mDrawable);
+		mErrorMessageView.setBackgroundDrawable(mDrawable);
 	}
 	switcherOutside = (ViewSwitcher) rootView.findViewById(R.id.switcher_outside);
 	switcherInside = (ViewSwitcher) rootView.findViewById(R.id.switcher_inside);

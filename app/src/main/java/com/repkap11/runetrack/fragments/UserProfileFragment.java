@@ -6,16 +6,34 @@
  */
 package com.repkap11.runetrack.fragments;
 
-import android.content.*;
-import android.graphics.drawable.*;
-import android.os.*;
-import android.util.*;
-import android.view.*;
-import android.widget.*;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.os.Parcelable;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 
-import com.repkap11.runetrack.*;
+import com.repkap11.runetrack.DataTable;
+import com.repkap11.runetrack.DataTableBounds;
+import com.repkap11.runetrack.DataTableViewHolder;
+import com.repkap11.runetrack.DownloadIntentService;
+import com.repkap11.runetrack.MainActivity;
+import com.repkap11.runetrack.R;
+import com.repkap11.runetrack.TextDrawable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Locale;
 
 public class UserProfileFragment extends FragmentBase {
 
@@ -26,6 +44,7 @@ private ResponseReceiver receiver;
 private boolean needsDownload = true;
 private boolean needsToShowDownloadFailure = false;
 private String userName;
+private int mDownloadErrorCode;
 
 public UserProfileFragment() {
 	// Empty constructor required for fragment subclasses
@@ -48,11 +67,10 @@ public void onResume() {
 		receiver = new ResponseReceiver();
 		getActivity().registerReceiver(receiver, filter);
 		this.getActivity().startService(msgIntent);
-		Log.e(TAG, "Doanload service started");
-
+		//Log.e(TAG, "Doanload service started");
 	}else {
-
 		if(needsToShowDownloadFailure) {
+			setErrorMessageBasedOnCode(mDownloadErrorCode);
 			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
 		}else {
 			setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
@@ -60,13 +78,35 @@ public void onResume() {
 	}
 }
 
+private void setErrorMessageBasedOnCode(int errorCode) {
+	int errorMessageID = R.string.USER_PROFILE_ERROR_CODE_UNKNOWN;
+	switch(errorCode) {
+		case DownloadIntentService.USER_PROFILE_ERROR_CODE_UNKNOWN:
+			errorMessageID = R.string.USER_PROFILE_ERROR_CODE_UNKNOWN;
+			break;
+		case DownloadIntentService.USER_PROFILE_ERROR_CODE_NOT_ON_RS_HIGHSCORES:
+			errorMessageID = R.string.USER_PROFILE_ERROR_CODE_NOT_ON_RS_HIGHSCORES;
+			break;
+		case DownloadIntentService.USER_PROFILE_ERROR_CODE_NOT_ENOUGH_VIEWS:
+			errorMessageID = R.string.USER_PROFILE_ERROR_CODE_NOT_ENOUGH_VIEWS;
+			break;
+		case DownloadIntentService.USER_PROFILE_ERROR_CODE_RUNETRACK_DOWN:
+			errorMessageID = R.string.USER_PROFILE_ERROR_CODE_RUNETRACK_DOWN;
+			break;
+		default:
+			errorMessageID = R.string.USER_PROFILE_ERROR_CODE_UNKNOWN;
+	}
+	setErrorMessage(errorMessageID);
+}
+
 @Override
 public void onSaveInstanceState(Bundle outState) {
 	super.onSaveInstanceState(outState);
 	if(downloadResult != null) {
 		outState.putParcelableArrayList(DownloadIntentService.PARAM_USERNAME, downloadResult);
-		outState.putBoolean("needsToShowDownloadFailure", needsToShowDownloadFailure);
 	}
+	outState.putBoolean("needsToShowDownloadFailure", needsToShowDownloadFailure);
+	outState.putInt(DownloadIntentService.PARAM_USER_PROFILE_ERROR_CODE, mDownloadErrorCode);
 }
 
 @Override
@@ -83,11 +123,6 @@ public void onDetach() {
 	super.onDetach();
 }
 
-@Override
-protected boolean isWaitingForData() {
-	return needsDownload;
-}
-
 public void reloadData() {
 	((MainActivity) this.getActivity()).selectUserProfileByName(userName);
 }
@@ -101,7 +136,7 @@ public boolean canScrollUp() {
 public Drawable onInflateContentView(ViewGroup container) {
 	LayoutInflater inflater = LayoutInflater.from(this.getActivity());
 	Log.e(TAG, "On create view called userprofile fragment");
-	TextDrawable result = new TextDrawable(getResources(),R.string.user_profile_download_error_message);
+	TextDrawable result = new TextDrawable(getResources(), R.string.USER_PROFILE_ERROR_CODE_UNKNOWN);
 	View rootView = inflater.inflate(R.layout.fragment_content_shared_list, container, true);
 	userName = getArguments().getString(MainActivity.ARG_USERNAME);
 	mList = ((ListView) rootView.findViewById(R.id.fragment_content_shared_list_list));
@@ -112,6 +147,7 @@ public Drawable onInflateContentView(ViewGroup container) {
 	if(mSavedInstanceState != null) {
 
 		needsToShowDownloadFailure = mSavedInstanceState.getBoolean("needsToShowDownloadFailure");
+		mDownloadErrorCode = mSavedInstanceState.getInt(DownloadIntentService.PARAM_USER_PROFILE_ERROR_CODE);
 		Log.e(TAG, "needsToShowDownloadFailure updated from state : " + needsToShowDownloadFailure);
 		downloadResult = mSavedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_USERNAME);
 		if(downloadResult != null) {
@@ -125,11 +161,11 @@ public Drawable onInflateContentView(ViewGroup container) {
 public void applyDownloadResult(ArrayList<Parcelable> result) {
 	refreshComplete();
 	if(result == null) {
-		Log.e(TAG, "Result Null");
+		//Log.e(TAG, "Result Null");
 	}else if(this.getActivity() == null) {
-		Log.e(TAG, "Activity is Null");
+		//Log.e(TAG, "Activity is Null");
 	}else {
-		Log.e(TAG, "All good, neither null");
+		//Log.e(TAG, "All good, neither null");
 	}
 	mList.setAdapter(new ArrayAdapter<Parcelable>(this.getActivity(), 0, result) {
 		private DataTableBounds bounds;
@@ -221,11 +257,11 @@ public class ResponseReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		// Log.e(TAG, "before crash");
 		downloadResult = intent.getParcelableArrayListExtra(DownloadIntentService.PARAM_USERNAME);
-		if(downloadResult == null || downloadResult.size() == 0) {
+		mDownloadErrorCode = intent.getIntExtra(DownloadIntentService.PARAM_USER_PROFILE_ERROR_CODE, mDownloadErrorCode);
+		if(mDownloadErrorCode != DownloadIntentService.USER_PROFILE_ERROR_CODE_SUCCESS || downloadResult == null || downloadResult.size() == 0) {
 			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
 			needsToShowDownloadFailure = true;
-			// Toast.makeText(UserProfileFragment.this.getActivity(),
-			// "Failure", Toast.LENGTH_SHORT).show();
+			setErrorMessageBasedOnCode(mDownloadErrorCode);
 		}else {
 			DataTable topHeader = new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "Curnt ", "Runescape", "Stats", "Tod", "ay", "This", "Week"})));
 			DataTable header = new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "Level", "Xp", "Rank", "Lvls", "Xp", "Lvls", "Xp"})));
