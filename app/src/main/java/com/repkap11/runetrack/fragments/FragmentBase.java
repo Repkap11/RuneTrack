@@ -7,8 +7,11 @@
 package com.repkap11.runetrack.fragments;
 
 import android.app.Fragment;
+import android.content.BroadcastReceiver;
 import android.content.Context;
-import android.content.res.Resources;
+import android.content.Intent;
+import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Typeface;
@@ -17,6 +20,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Parcelable;
+import android.preference.PreferenceManager;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.URLSpan;
@@ -29,10 +33,12 @@ import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
 import com.repkap11.runetrack.DataTable;
 import com.repkap11.runetrack.DataTableBounds;
+import com.repkap11.runetrack.DownloadIntentService;
 import com.repkap11.runetrack.MainActivity;
 import com.repkap11.runetrack.R;
 import com.repkap11.runetrack.TextDrawable;
@@ -48,15 +54,19 @@ protected static final int SWITCHED_VIEW_SPINNER = 0;
 protected static final int SWITCHED_VIEW_RETRY = 1;
 protected static final int SWITCHED_VIEW_CONTENT = 2;
 protected static final int IMAGE_CHAR_SIZE = 3;
-private static final String TAG = "FragmentBase";
+private static final String TAG = FragmentBase.class.getSimpleName();
 public PullToRefreshLayout mPullToRefreshLayout;
-protected Bundle mSavedInstanceState = null;
 private TextView failureRetryButton;
 private Handler mHandler = new Handler();
 private ViewSwitcher switcherOutside;
 private ViewSwitcher switcherInside;
 private Drawable mDrawable;
 private View mErrorMessageView = null;
+private int mDownloadErrorCode;
+private ResponseReceiver mReceiver;
+private Bundle mSavedInstanceState = null;
+private static final String PARAM_HAS_DOWNLOADED_DATA = "PARAM_HAS_DOWNLOADED_DATA";
+public static final String PARAM_IS_DOWNLOAD_PENDING = "PARAM_HAS_DOWNLOADED_DATADownloadedData";
 
 public static DataTableBounds calculateLayoutSize(ArrayAdapter<Parcelable> arrayAdapter, Context context, ListView view) {
 	// Log.e(TAG, "Calculating Bounds");
@@ -130,17 +140,22 @@ private void failureRetryOnClick(View v) {
 
 public abstract void reloadData();
 
-protected void setErrorMessage(int textID){
-	((TextDrawable)mDrawable).setText(getResources(),textID);
+private void setErrorMessage(int textID) {
+	((TextDrawable) mDrawable).setText(getResources(), textID);
 	if(Build.VERSION.SDK_INT >= 16) {
 		mErrorMessageView.setBackground(mDrawable);
 	}else {
 		mErrorMessageView.setBackgroundDrawable(mDrawable);
 	}
 }
+
+@Override
+public void onCreate(Bundle savedInstanceState) {
+	super.onCreate(savedInstanceState);
+}
+
 @Override
 public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-	mSavedInstanceState = savedInstanceState;
 	final ViewGroup rootView = (ViewGroup) inflater.inflate(R.layout.fragment_content_base, container, false);
 	mErrorMessageView = rootView.findViewById(R.id.content_error_message);
 	if(Build.VERSION.SDK_INT >= 16) {
@@ -164,11 +179,69 @@ public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle sa
 			Log.e("Test", "View a subview of pullable view");
 		}
 	}
-
 	Log.e("TAG", "Found scrollable lists:" + pullableViews.length);
 	ActionBarPullToRefresh.from(getActivity()).theseChildrenArePullable(pullableViews).listener(FragmentBase.this).setup(mPullToRefreshLayout);
-	mSavedInstanceState = null;
+	mSavedInstanceState = savedInstanceState;
+	if(savedInstanceState != null) {
+		//mHasDownloadedData = savedInstanceState.getBoolean(PARAM_HAS_DOWNLOADED_DATA);
+		//mIsDownloadPending = savedInstanceState.getBoolean(PARAM_IS_DOWNLOAD_PENDING);
+		mDownloadErrorCode = savedInstanceState.getInt(DownloadIntentService.PARAM_ERROR_CODE);
+	}else {
+		//booleans set by default value of class.
+	}
+	//doThings();
 	return rootView;
+}
+
+private void doThings() {
+	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
+	boolean isDownloadPending = preferences.getBoolean(PARAM_IS_DOWNLOAD_PENDING, false);
+	//Log.e(TAG, "onResume mNeedsDownload:" + mNeedsDownload);
+	if(isDownloadPending) {
+		setSwitchedView(FragmentBase.SWITCHED_VIEW_SPINNER);
+	}else if(mSavedInstanceState != null) {
+		if(mDownloadErrorCode != DownloadIntentService.ERROR_CODE_SUCCESS) {
+			setErrorMessageBasedOnCode(mDownloadErrorCode);
+			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
+		}else {
+			setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
+			try {
+				applyDownloadResultFromIntent(mSavedInstanceState, false);
+			}catch (Exception e){
+				//Toast.makeText(getActivity(),"Would have crashed",Toast.LENGTH_SHORT).show();
+				//This shouldn't happen, but does. Just try again....
+				reloadData();
+			}
+		}
+	}else {
+		setSwitchedView(FragmentBase.SWITCHED_VIEW_SPINNER);
+		Intent msgIntent = requestDownload();
+		isDownloadPending = true;
+		this.getActivity().startService(msgIntent);
+	}
+}
+
+@Override
+public void onResume() {
+	super.onResume();
+	mReceiver = new ResponseReceiver();
+	IntentFilter filter = new IntentFilter(DownloadIntentService.PARAM_USERNAME);
+	filter.addCategory(Intent.CATEGORY_DEFAULT);
+	getActivity().registerReceiver(mReceiver, filter);
+	doThings();
+}
+
+@Override
+public void onPause() {
+	super.onPause();
+	if(mReceiver != null) {
+		getActivity().unregisterReceiver(mReceiver);
+	}
+}
+
+@Override
+public void onDestroy() {
+	super.onDestroy();
 }
 
 public void fixedFindViewsWithText(ViewGroup rootView, ArrayList<View> outViews, String string) {
@@ -183,6 +256,28 @@ public void fixedFindViewsWithText(ViewGroup rootView, ArrayList<View> outViews,
 			fixedFindViewsWithText((ViewGroup) child, outViews, string);
 		}
 	}
+
+}
+
+private void setErrorMessageBasedOnCode(int errorCode) {
+	int errorMessageID = R.string.ERROR_CODE_UNKNOWN;
+	switch(errorCode) {
+		case DownloadIntentService.ERROR_CODE_UNKNOWN:
+			errorMessageID = R.string.ERROR_CODE_UNKNOWN;
+			break;
+		case DownloadIntentService.ERROR_CODE_NOT_ON_RS_HIGHSCORES:
+			errorMessageID = R.string.ERROR_CODE_NOT_ON_RS_HIGHSCORES;
+			break;
+		case DownloadIntentService.ERROR_CODE_NOT_ENOUGH_VIEWS:
+			errorMessageID = R.string.ERROR_CODE_NOT_ENOUGH_VIEWS;
+			break;
+		case DownloadIntentService.ERROR_CODE_RUNETRACK_DOWN:
+			errorMessageID = R.string.ERROR_CODE_RUNETRACK_DOWN;
+			break;
+		default:
+			errorMessageID = R.string.ERROR_CODE_UNKNOWN;
+	}
+	setErrorMessage(errorMessageID);
 }
 
 @Override
@@ -197,7 +292,9 @@ protected void refreshComplete() {
 
 public abstract boolean canScrollUp();
 
-protected void setSwitchedView(int state) {
+protected abstract Intent requestDownload();
+
+private void setSwitchedView(int state) {
 	switch(state) {
 		case SWITCHED_VIEW_SPINNER:
 			switcherOutside.setDisplayedChild(0);
@@ -213,9 +310,37 @@ protected void setSwitchedView(int state) {
 	}
 }
 
+@Override
+public void onSaveInstanceState(Bundle outState) {
+	super.onSaveInstanceState(outState);
+	//outState.putBoolean(PARAM_IS_DOWNLOAD_PENDING, mIsDownloadPending);
+	//outState.putBoolean(PARAM_HAS_DOWNLOADED_DATA, mHasDownloadedData);
+	outState.putInt(DownloadIntentService.PARAM_ERROR_CODE, mDownloadErrorCode);
+}
+
 public void inflateContentView(ViewGroup container) {
 	mDrawable = onInflateContentView(container);
 }
 
 protected abstract Drawable onInflateContentView(ViewGroup container);
+
+protected abstract void applyDownloadResultFromIntent(Bundle intent, boolean isFirstTimeData);
+
+public class ResponseReceiver extends BroadcastReceiver {
+
+	@Override
+	public void onReceive(Context context, Intent intent) {
+		//mIsDownloadPending = false;
+		//mHasDownloadedData = true;
+		mDownloadErrorCode = intent.getIntExtra(DownloadIntentService.PARAM_ERROR_CODE, mDownloadErrorCode);
+		Log.e(TAG, "Got download resuit in base fragment error code:" + mDownloadErrorCode);
+		if(mDownloadErrorCode != DownloadIntentService.ERROR_CODE_SUCCESS) {
+			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
+			setErrorMessageBasedOnCode(mDownloadErrorCode);
+		}else {
+			setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
+			applyDownloadResultFromIntent(intent.getExtras(), true);
+		}
+	}
+}
 }

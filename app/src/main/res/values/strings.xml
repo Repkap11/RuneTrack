@@ -19,10 +19,10 @@
 	<string name="pullable_to_refresh_view">pullable_to_refresh_view</string>
 
 
-	<string name="USER_PROFILE_ERROR_CODE_SUCCESS">No error</string>
-	<string name="USER_PROFILE_ERROR_CODE_UNKNOWN">Failed to load user profile for unknown reason.</string>
-	<string name="USER_PROFILE_ERROR_CODE_NOT_ON_RS_HIGHSCORES">User not on RS highscores.</string>
-	<string name="USER_PROFILE_ERROR_CODE_NOT_ENOUGH_VIEWS">Visit www.RuneTrack.com to unlock your account.</string>
-	<string name="USER_PROFILE_ERROR_CODE_RUNETRACK_DOWN">Unable to connect to runetrack.com</string>
+	<string name="ERROR_CODE_SUCCESS">No error</string>
+	<string name="ERROR_CODE_UNKNOWN">Failed to load user profile for unknown reason.</string>
+	<string name="ERROR_CODE_NOT_ON_RS_HIGHSCORES">User not on RS highscores.</string>
+	<string name="ERROR_CODE_NOT_ENOUGH_VIEWS">Visit www.RuneTrack.com to unlock your account.</string>
+	<string name="ERROR_CODE_RUNETRACK_DOWN">Unable to connect to runetrack.com</string>
 
 </resources>

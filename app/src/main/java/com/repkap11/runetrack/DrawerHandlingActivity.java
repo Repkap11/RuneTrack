@@ -150,7 +150,7 @@ protected void onCreateAfterSetContentView(Bundle savedInstanceState) {
 	mUserNamesToShow = getStringArrayPref(prefs, USER_PROFILE_NAMES);
 	if(mUserNamesToShow.size() == 0) {
 		Log.e(TAG, "Not using saved values");
-		mUserNamesToShow = new ArrayList<String>(Arrays.asList(new String[]{"Repkap11", "Zezima", "S U O M I", "Jake", "Drumgun", "Alkan"}));
+		mUserNamesToShow = new ArrayList<String>(Arrays.asList(new String[]{"Repkap11", "Zezima", "Suomi", "Jake", "Drumgun", "Alkan"}));
 	}
 	mDrawerList.setOnChildClickListener(new DrawerChildClickListener());
 	mDrawerList.setOnItemLongClickListener(new DrawerGroupLongClickListener());

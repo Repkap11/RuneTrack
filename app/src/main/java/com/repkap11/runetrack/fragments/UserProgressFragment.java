@@ -6,22 +6,44 @@
  */
 package com.repkap11.runetrack.fragments;
 
-import android.content.*;
-import android.graphics.*;
-import android.graphics.Paint.*;
-import android.graphics.drawable.*;
-import android.os.*;
-import android.util.*;
-import android.view.*;
-import android.widget.*;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.Color;
+import android.graphics.Paint.Align;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.os.Parcelable;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.Gravity;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
+import android.widget.ListView;
+import android.widget.TextView;
 
-import com.jjoe64.graphview.*;
-import com.jjoe64.graphview.GraphView.*;
-import com.jjoe64.graphview.GraphViewSeries.*;
-import com.repkap11.runetrack.*;
+import com.jjoe64.graphview.CustomLabelFormatter;
+import com.jjoe64.graphview.GraphView;
+import com.jjoe64.graphview.GraphView.GraphViewData;
+import com.jjoe64.graphview.GraphViewDataInterface;
+import com.jjoe64.graphview.GraphViewSeries;
+import com.jjoe64.graphview.GraphViewSeries.GraphViewSeriesStyle;
+import com.jjoe64.graphview.LineGraphView;
+import com.repkap11.runetrack.DataTable;
+import com.repkap11.runetrack.DataTableBounds;
+import com.repkap11.runetrack.DataTableViewHolder;
+import com.repkap11.runetrack.DownloadIntentService;
+import com.repkap11.runetrack.MainActivity;
+import com.repkap11.runetrack.R;
+import com.repkap11.runetrack.TextDrawable;
 
-import java.text.*;
-import java.util.*;
+import java.text.NumberFormat;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * Fragment that appears in the "content_frame", shows a planet
@@ -33,9 +55,6 @@ public double[] downloadResult;
 public String[] downloadResult2;
 public ArrayList<Parcelable> downloadResult3;
 private ListView mProgressHolder;
-private ResponseReceiver receiver;
-private boolean needsDownload = true;
-private boolean needsToShowDownloadFailure = false;
 private String userName;
 private int skillNumber;
 private String skillName;
@@ -45,57 +64,18 @@ public UserProgressFragment() {
 }
 
 @Override
-public void onResume() {
-	super.onResume();
-	// Log.e(TAG, "onResume needsDownloadFailure " +
-	// needsToShowDownloadFailure);
-	// Log.e(TAG, "onResume needsDownload " + needsDownload);
-	if(needsDownload) {
-		setSwitchedView(FragmentBase.SWITCHED_VIEW_SPINNER);
-		Intent msgIntent = new Intent(this.getActivity(), DownloadIntentService.class);
-		msgIntent.putExtra(DownloadIntentService.PARAM_USERNAME, userName);
-		msgIntent.putExtra(DownloadIntentService.PARAM_SKILL_NUMBER, skillNumber);
-		msgIntent.putExtra(DownloadIntentService.PARAM_SKILL_NAME, skillName);
-		msgIntent.putExtra(DownloadIntentService.PARAM_WHICH_DATA, DownloadIntentService.PARAM_HISTORY_GRAPH);
-		this.getActivity().startService(msgIntent);
-		IntentFilter filter = new IntentFilter(DownloadIntentService.PARAM_USERNAME);
-
-		filter.addCategory(Intent.CATEGORY_DEFAULT);
-		receiver = new ResponseReceiver();
-		getActivity().registerReceiver(receiver, filter);
-
-	}else {
-
-		if(needsToShowDownloadFailure) {
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
-		}else {
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
-		}
-	}
-}
-
-@Override
 public void onSaveInstanceState(Bundle outState) {
 	super.onSaveInstanceState(outState);
 	if(downloadResult != null) {
-		outState.putDoubleArray(DownloadIntentService.PARAM_USERNAME, downloadResult);
-		outState.putStringArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE, downloadResult2);
+		outState.putDoubleArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE, downloadResult);
+		outState.putStringArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE2, downloadResult2);
 		outState.putParcelableArrayList(DownloadIntentService.PARAM_PROGRESS_ENTRIES, downloadResult3);
-		outState.putBoolean("needsToShowDownloadFailure", needsToShowDownloadFailure);
-	}
-}
-
-@Override
-public void onPause() {
-	super.onPause();
-	if(receiver != null) {
-		getActivity().unregisterReceiver(receiver);
 	}
 }
 
 @Override
 public void onDetach() {
-	Log.e(TAG, "Fragment Detached");
+	//Log.e(TAG, "Fragment Detached");
 	super.onDetach();
 }
 
@@ -110,9 +90,19 @@ public boolean canScrollUp() {
 }
 
 @Override
+protected Intent requestDownload() {
+	Intent msgIntent = new Intent(this.getActivity(), DownloadIntentService.class);
+	msgIntent.putExtra(DownloadIntentService.PARAM_USERNAME, userName);
+	msgIntent.putExtra(DownloadIntentService.PARAM_SKILL_NUMBER, skillNumber);
+	msgIntent.putExtra(DownloadIntentService.PARAM_SKILL_NAME, skillName);
+	msgIntent.putExtra(DownloadIntentService.PARAM_WHICH_DATA, DownloadIntentService.PARAM_HISTORY_GRAPH);
+	return msgIntent;
+}
+
+@Override
 public Drawable onInflateContentView(ViewGroup container) {
 	LayoutInflater inflater = LayoutInflater.from(this.getActivity());
-	TextDrawable result = new TextDrawable(getResources(),R.string.history_graph_download_error_message);
+	TextDrawable result = new TextDrawable(getResources(), R.string.history_graph_download_error_message);
 	View rootView = inflater.inflate(R.layout.fragment_content_shared_list, container, true);
 	userName = getArguments().getString(MainActivity.ARG_USERNAME);
 	skillName = getArguments().getString(MainActivity.ARG_SKILL_NAME);
@@ -121,21 +111,22 @@ public Drawable onInflateContentView(ViewGroup container) {
 	mProgressHolder.setScrollingCacheEnabled(false);
 	mProgressHolder.setAnimationCacheEnabled(false);
 	getActivity().setTitle(userName);
-	needsDownload = true;
-
-	if(mSavedInstanceState != null) {
-
-		needsToShowDownloadFailure = mSavedInstanceState.getBoolean("needsToShowDownloadFailure");
-		Log.e(TAG, "needsToShowDownloadFailure updated from state : " + needsToShowDownloadFailure);
-		downloadResult = mSavedInstanceState.getDoubleArray(DownloadIntentService.PARAM_USERNAME);
-		downloadResult2 = mSavedInstanceState.getStringArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE);
-		downloadResult3 = mSavedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_PROGRESS_ENTRIES);
-		if(downloadResult != null) {
-			needsDownload = false;
-			applyDownloadResult(downloadResult, downloadResult2, downloadResult3);
-		}
-	}
 	return result;
+}
+
+@Override
+protected void applyDownloadResultFromIntent(Bundle bundle, boolean isFirstTimeData) {
+	downloadResult = bundle.getDoubleArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE);
+	downloadResult2 = bundle.getStringArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE2);
+	downloadResult3 = bundle.getParcelableArrayList(DownloadIntentService.PARAM_PROGRESS_ENTRIES);
+	Log.e(TAG,"downloadResult null:"+(downloadResult == null));
+	if(isFirstTimeData) {
+		downloadResult3.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "#", "Date", "Rank", "Level", "Xp", "Xp Gained"}))));
+		downloadResult3.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", "", "", ""}))));
+		downloadResult3.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", "", "", ""}))));
+	}
+	applyDownloadResult(downloadResult, downloadResult2, downloadResult3);
+
 }
 
 public void applyDownloadResult(final double[] result, final String[] result2, ArrayList<Parcelable> result3) {
@@ -276,28 +267,4 @@ protected View getGraphView(View convertView, final double[] result, final Strin
 	returnView.addView(graphView);
 	return returnView;
 }
-
-public class ResponseReceiver extends BroadcastReceiver {
-	@Override
-	public void onReceive(Context context, Intent intent) {
-		// Log.e(TAG, "before crash");
-		downloadResult = intent.getDoubleArrayExtra(DownloadIntentService.PARAM_USER_PROFILE_TABLE);
-		downloadResult2 = intent.getStringArrayExtra(DownloadIntentService.PARAM_USER_PROFILE_TABLE2);
-		downloadResult3 = intent.getParcelableArrayListExtra(DownloadIntentService.PARAM_PROGRESS_ENTRIES);
-		if(downloadResult == null || downloadResult3 == null || downloadResult.length == 0 || downloadResult3.size() == 0) {
-			Log.e(TAG, "downloadResult3:" + downloadResult3);
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
-			needsToShowDownloadFailure = true;
-			// Toast.makeText(UserProgressFragment.this.getActivity(),
-			// "Failure", Toast.LENGTH_SHORT).show();
-		}else {
-			downloadResult3.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "#", "Date", "Rank", "Level", "Xp", "Xp Gained"}))));
-			downloadResult3.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", "", "", ""}))));
-			downloadResult3.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", "", "", ""}))));
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
-			applyDownloadResult(downloadResult, downloadResult2, downloadResult3);
-		}
-	}
-}
-
 }

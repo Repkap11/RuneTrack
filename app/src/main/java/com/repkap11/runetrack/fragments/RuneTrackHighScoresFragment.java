@@ -6,17 +6,33 @@
  */
 package com.repkap11.runetrack.fragments;
 
-import android.content.*;
-import android.graphics.drawable.*;
-import android.os.*;
-import android.util.*;
-import android.view.*;
-import android.view.View.*;
-import android.widget.*;
+import android.content.Context;
+import android.content.Intent;
+import android.graphics.drawable.Drawable;
+import android.os.Bundle;
+import android.os.Parcelable;
+import android.util.Log;
+import android.util.TypedValue;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ImageView;
+import android.widget.ListView;
+import android.widget.TextView;
 
-import com.repkap11.runetrack.*;
+import com.repkap11.runetrack.DataTable;
+import com.repkap11.runetrack.DataTableBounds;
+import com.repkap11.runetrack.DownloadIntentService;
+import com.repkap11.runetrack.MainActivity;
+import com.repkap11.runetrack.R;
+import com.repkap11.runetrack.TextDrawable;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Locale;
 
 public class RuneTrackHighScoresFragment extends FragmentBase {
 
@@ -31,35 +47,6 @@ private String skillName;
 
 public RuneTrackHighScoresFragment() {
 	// Empty constructor required for fragment subclasses
-}
-
-@Override
-public void onResume() {
-	super.onResume();
-	// Log.e(TAG, "onResume needsDownloadFailure " +
-	// needsToShowDownloadFailure);
-	// Log.e(TAG, "onResume needsDownload " + needsDownload);
-	if(needsDownload) {
-		setSwitchedView(FragmentBase.SWITCHED_VIEW_SPINNER);
-		Intent msgIntent = new Intent(this.getActivity(), DownloadIntentService.class);
-		msgIntent.putExtra(DownloadIntentService.PARAM_PAGE_NUMBER, pageNumber);
-		msgIntent.putExtra(DownloadIntentService.PARAM_SKILL_NAME, skillName);
-		msgIntent.putExtra(DownloadIntentService.PARAM_WHICH_DATA, DownloadIntentService.PARAM_RUNETRACK_HIGH_SCORES);
-		this.getActivity().startService(msgIntent);
-		IntentFilter filter = new IntentFilter(DownloadIntentService.PARAM_USERNAME);
-
-		filter.addCategory(Intent.CATEGORY_DEFAULT);
-		receiver = new ResponseReceiver();
-		getActivity().registerReceiver(receiver, filter);
-
-	}else {
-
-		if(needsToShowDownloadFailure) {
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
-		}else {
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
-		}
-	}
 }
 
 @Override
@@ -85,7 +72,6 @@ public void onDetach() {
 	super.onDetach();
 }
 
-
 @Override
 public void reloadData() {
 	((MainActivity) this.getActivity()).selectRuneTrackHighScores(skillName, pageNumber);
@@ -97,28 +83,35 @@ public boolean canScrollUp() {
 }
 
 @Override
+protected Intent requestDownload() {
+	Intent msgIntent = new Intent(this.getActivity(), DownloadIntentService.class);
+	msgIntent.putExtra(DownloadIntentService.PARAM_PAGE_NUMBER, pageNumber);
+	msgIntent.putExtra(DownloadIntentService.PARAM_SKILL_NAME, skillName);
+	msgIntent.putExtra(DownloadIntentService.PARAM_WHICH_DATA, DownloadIntentService.PARAM_RUNETRACK_HIGH_SCORES);
+	return msgIntent;
+}
+
+@Override
 public Drawable onInflateContentView(ViewGroup container) {
 	LayoutInflater inflater = LayoutInflater.from(this.getActivity());
 	//TODO change to its own layout?
-	TextDrawable result = new TextDrawable(getResources(),R.string.highscores_download_error_message);
+	TextDrawable result = new TextDrawable(getResources(), R.string.highscores_download_error_message);
 	View rootView = inflater.inflate(R.layout.fragment_content_shared_list, container, true);
 	skillName = getArguments().getString(MainActivity.ARG_SKILL_NAME);
 	pageNumber = getArguments().getInt(MainActivity.ARG_PAGE_NUMBER);
 	mProgressHolder = ((ListView) rootView.findViewById(R.id.fragment_content_shared_list_list));
 	getActivity().setTitle(getResources().getString(R.string.runetrack_highscores));
-	needsDownload = true;
-
-	if(mSavedInstanceState != null) {
-
-		needsToShowDownloadFailure = mSavedInstanceState.getBoolean("needsToShowDownloadFailure");
-		Log.e(TAG, "needsToShowDownloadFailure updated from state : " + needsToShowDownloadFailure);
-		downloadResult = mSavedInstanceState.getParcelableArrayList(DownloadIntentService.PARAM_HIGH_SCORES_ENTRIES);
-		if(downloadResult != null) {
-			needsDownload = false;
-			applyDownloadResult(downloadResult);
-		}
-	}
 	return result;
+}
+
+@Override
+protected void applyDownloadResultFromIntent(Bundle bundle, boolean isFirstTimeData) {
+	downloadResult = bundle.getParcelableArrayList(DownloadIntentService.PARAM_HIGH_SCORES_ENTRIES);
+	if(isFirstTimeData) {
+		downloadResult.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"RT Rank", "Name", "RS Rank", "Level", "XP"}))));
+		downloadResult.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", ""}))));
+	}
+	applyDownloadResult(downloadResult);
 }
 
 public void applyDownloadResult(ArrayList<Parcelable> result) {
@@ -222,24 +215,5 @@ public void applyDownloadResult(ArrayList<Parcelable> result) {
 		}
 
 	});
-}
-
-public class ResponseReceiver extends BroadcastReceiver {
-	@Override
-	public void onReceive(Context context, Intent intent) {
-		// Log.e(TAG, "before crash");
-		downloadResult = intent.getParcelableArrayListExtra(DownloadIntentService.PARAM_HIGH_SCORES_ENTRIES);
-		if(downloadResult == null || downloadResult.size() == 0) {
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
-			needsToShowDownloadFailure = true;
-			// Toast.makeText(UserProgressFragment.this.getActivity(),
-			// "Failure", Toast.LENGTH_SHORT).show();
-		}else {
-			downloadResult.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"RT Rank", "Name", "RS Rank", "Level", "XP"}))));
-			downloadResult.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", ""}))));
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
-			applyDownloadResult(downloadResult);
-		}
-	}
 }
 }
