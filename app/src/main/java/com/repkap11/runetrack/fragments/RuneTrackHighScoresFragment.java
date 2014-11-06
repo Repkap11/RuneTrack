@@ -53,8 +53,8 @@ public RuneTrackHighScoresFragment() {
 public void onSaveInstanceState(Bundle outState) {
 	super.onSaveInstanceState(outState);
 	if(downloadResult != null) {
-		outState.putParcelableArrayList(DownloadIntentService.PARAM_HIGH_SCORES_ENTRIES, downloadResult);
-		outState.putBoolean("needsToShowDownloadFailure", needsToShowDownloadFailure);
+		//outState.putParcelableArrayList(DownloadIntentService.PARAM_HIGH_SCORES_ENTRIES, downloadResult);
+		//outState.putBoolean("needsToShowDownloadFailure", needsToShowDownloadFailure);
 	}
 }
 
@@ -68,7 +68,7 @@ public void onPause() {
 
 @Override
 public void onDetach() {
-	Log.e(TAG, "Fragment Detached");
+	//Log.e(TAG, "Fragment Detached");
 	super.onDetach();
 }
 
@@ -105,12 +105,8 @@ public Drawable onInflateContentView(ViewGroup container) {
 }
 
 @Override
-protected void applyDownloadResultFromIntent(Bundle bundle, boolean isFirstTimeData) {
+protected void applyDownloadResultFromIntent(Bundle bundle) {
 	downloadResult = bundle.getParcelableArrayList(DownloadIntentService.PARAM_HIGH_SCORES_ENTRIES);
-	if(isFirstTimeData) {
-		downloadResult.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"RT Rank", "Name", "RS Rank", "Level", "XP"}))));
-		downloadResult.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", ""}))));
-	}
 	applyDownloadResult(downloadResult);
 }
 

@@ -11,16 +11,13 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.content.SharedPreferences;
 import android.graphics.Paint;
 import android.graphics.Point;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.Build;
 import android.os.Bundle;
-import android.os.Handler;
 import android.os.Parcelable;
-import android.preference.PreferenceManager;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.style.URLSpan;
@@ -33,7 +30,6 @@ import android.view.WindowManager;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
 import com.repkap11.runetrack.DataTable;
@@ -54,19 +50,18 @@ protected static final int SWITCHED_VIEW_SPINNER = 0;
 protected static final int SWITCHED_VIEW_RETRY = 1;
 protected static final int SWITCHED_VIEW_CONTENT = 2;
 protected static final int IMAGE_CHAR_SIZE = 3;
+
 private static final String TAG = FragmentBase.class.getSimpleName();
 public PullToRefreshLayout mPullToRefreshLayout;
-private TextView failureRetryButton;
-private Handler mHandler = new Handler();
 private ViewSwitcher switcherOutside;
 private ViewSwitcher switcherInside;
 private Drawable mDrawable;
 private View mErrorMessageView = null;
 private int mDownloadErrorCode;
 private ResponseReceiver mReceiver;
-private Bundle mSavedInstanceState = null;
-private static final String PARAM_HAS_DOWNLOADED_DATA = "PARAM_HAS_DOWNLOADED_DATA";
-public static final String PARAM_IS_DOWNLOAD_PENDING = "PARAM_HAS_DOWNLOADED_DATADownloadedData";
+private Bundle mDownloadedData = null;
+private String mWhichData = "";
+private boolean mNeedsDownload = true;
 
 public static DataTableBounds calculateLayoutSize(ArrayAdapter<Parcelable> arrayAdapter, Context context, ListView view) {
 	// Log.e(TAG, "Calculating Bounds");
@@ -151,7 +146,15 @@ private void setErrorMessage(int textID) {
 
 @Override
 public void onCreate(Bundle savedInstanceState) {
+	//Toast.makeText(getActivity().getApplicationContext(), "fragment created", Toast.LENGTH_SHORT).show();
+	//Log.e(TAG, "fragment created");
 	super.onCreate(savedInstanceState);
+	setRetainInstance(true);
+	mNeedsDownload = true;
+	mReceiver = new ResponseReceiver();
+	IntentFilter filter = new IntentFilter(DownloadIntentService.PARAM_USERNAME);
+	filter.addCategory(Intent.CATEGORY_DEFAULT);
+	getActivity().getApplicationContext().registerReceiver(mReceiver, filter);
 }
 
 @Override
@@ -171,42 +174,42 @@ public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle sa
 
 	ArrayList<View> outViews = new ArrayList<View>();
 	fixedFindViewsWithText(rootView, outViews, getResources().getString(R.string.pullable_to_refresh_view));
-	Log.e("TAG", "Found scrollable lists:" + outViews.size());
+	//Log.e("TAG", "Found scrollable lists:" + outViews.size());
 	View[] pullableViews = new View[0];
 	pullableViews = outViews.toArray(pullableViews);
 	for(int i = 0; i < pullableViews.length; i++) {
-		if(pullableViews[i] != null) {
-			Log.e("Test", "View a subview of pullable view");
-		}
+		//if(pullableViews[i] != null) {
+		//Log.e("Test", "View a subview of pullable view");
+		//}
 	}
-	Log.e("TAG", "Found scrollable lists:" + pullableViews.length);
+	//Log.e("TAG", "Found scrollable lists:" + pullableViews.length);
 	ActionBarPullToRefresh.from(getActivity()).theseChildrenArePullable(pullableViews).listener(FragmentBase.this).setup(mPullToRefreshLayout);
-	mSavedInstanceState = savedInstanceState;
+	//mDownloadedData = savedInstanceState;
 	if(savedInstanceState != null) {
-		//mHasDownloadedData = savedInstanceState.getBoolean(PARAM_HAS_DOWNLOADED_DATA);
-		//mIsDownloadPending = savedInstanceState.getBoolean(PARAM_IS_DOWNLOAD_PENDING);
 		mDownloadErrorCode = savedInstanceState.getInt(DownloadIntentService.PARAM_ERROR_CODE);
 	}else {
 		//booleans set by default value of class.
 	}
-	//doThings();
+	applyData(mNeedsDownload);
+	mNeedsDownload = false;
 	return rootView;
 }
 
-private void doThings() {
+private void applyData(boolean needsDownload) {
+	/*
 	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
 	boolean isDownloadPending = preferences.getBoolean(PARAM_IS_DOWNLOAD_PENDING, false);
 	//Log.e(TAG, "onResume mNeedsDownload:" + mNeedsDownload);
 	if(isDownloadPending) {
 		setSwitchedView(FragmentBase.SWITCHED_VIEW_SPINNER);
-	}else if(mSavedInstanceState != null) {
+	}else if(mDownloadedData != null) {
 		if(mDownloadErrorCode != DownloadIntentService.ERROR_CODE_SUCCESS) {
 			setErrorMessageBasedOnCode(mDownloadErrorCode);
 			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
 		}else {
 			setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
 			try {
-				applyDownloadResultFromIntent(mSavedInstanceState, false);
+				applyDownloadResultFromIntent(mDownloadedData, false);
 			}catch (Exception e){
 				//Toast.makeText(getActivity(),"Would have crashed",Toast.LENGTH_SHORT).show();
 				//This shouldn't happen, but does. Just try again....
@@ -214,40 +217,37 @@ private void doThings() {
 			}
 		}
 	}else {
+	*/
+	if(needsDownload) {
 		setSwitchedView(FragmentBase.SWITCHED_VIEW_SPINNER);
 		Intent msgIntent = requestDownload();
-		isDownloadPending = true;
-		this.getActivity().startService(msgIntent);
+		mWhichData = msgIntent.getStringExtra(DownloadIntentService.PARAM_WHICH_DATA);
+		//isDownloadPending = true;
+		this.getActivity().getApplicationContext().startService(msgIntent);
+	}else if(mDownloadedData != null) {
+		if(mDownloadErrorCode != DownloadIntentService.ERROR_CODE_SUCCESS) {
+			setErrorMessageBasedOnCode(mDownloadErrorCode);
+			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
+		}else {
+			setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
+			applyDownloadResultFromIntent(mDownloadedData);
+		}
 	}
-}
-
-@Override
-public void onResume() {
-	super.onResume();
-	mReceiver = new ResponseReceiver();
-	IntentFilter filter = new IntentFilter(DownloadIntentService.PARAM_USERNAME);
-	filter.addCategory(Intent.CATEGORY_DEFAULT);
-	getActivity().registerReceiver(mReceiver, filter);
-	doThings();
-}
-
-@Override
-public void onPause() {
-	super.onPause();
-	if(mReceiver != null) {
-		getActivity().unregisterReceiver(mReceiver);
-	}
+	//}
 }
 
 @Override
 public void onDestroy() {
+	if(mReceiver != null) {
+		getActivity().getApplicationContext().unregisterReceiver(mReceiver);
+	}
 	super.onDestroy();
 }
 
 public void fixedFindViewsWithText(ViewGroup rootView, ArrayList<View> outViews, String string) {
 	CharSequence description = rootView.getContentDescription();
 	if(description != null && description.toString().equals(string)) {
-		Log.e("TAG", "Found scrollable lists");
+		//Log.e("TAG", "Found scrollable lists");
 		outViews.add(rootView);
 	}
 	for(int i = 0; i < rootView.getChildCount(); i++) {
@@ -282,7 +282,7 @@ private void setErrorMessageBasedOnCode(int errorCode) {
 
 @Override
 public void onRefreshStarted(View view) {
-	Log.e(TAG, "Refresh started");
+	//Log.e(TAG, "Refresh started");
 	reloadData();
 }
 
@@ -324,7 +324,7 @@ public void inflateContentView(ViewGroup container) {
 
 protected abstract Drawable onInflateContentView(ViewGroup container);
 
-protected abstract void applyDownloadResultFromIntent(Bundle intent, boolean isFirstTimeData);
+protected abstract void applyDownloadResultFromIntent(Bundle intent);
 
 public class ResponseReceiver extends BroadcastReceiver {
 
@@ -332,14 +332,20 @@ public class ResponseReceiver extends BroadcastReceiver {
 	public void onReceive(Context context, Intent intent) {
 		//mIsDownloadPending = false;
 		//mHasDownloadedData = true;
-		mDownloadErrorCode = intent.getIntExtra(DownloadIntentService.PARAM_ERROR_CODE, mDownloadErrorCode);
-		Log.e(TAG, "Got download resuit in base fragment error code:" + mDownloadErrorCode);
-		if(mDownloadErrorCode != DownloadIntentService.ERROR_CODE_SUCCESS) {
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
-			setErrorMessageBasedOnCode(mDownloadErrorCode);
+		String whichData = intent.getStringExtra(DownloadIntentService.PARAM_WHICH_DATA);
+		if(mWhichData.equals(whichData)) {
+			mDownloadedData = intent.getExtras();
+			mDownloadErrorCode = intent.getIntExtra(DownloadIntentService.PARAM_ERROR_CODE, mDownloadErrorCode);
+			//Log.e(TAG, "Got download resuit in base fragment error code:" + mDownloadErrorCode);
+			if(mDownloadErrorCode != DownloadIntentService.ERROR_CODE_SUCCESS) {
+				setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
+				setErrorMessageBasedOnCode(mDownloadErrorCode);
+			}else {
+				setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
+				applyDownloadResultFromIntent(intent.getExtras());
+			}
 		}else {
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
-			applyDownloadResultFromIntent(intent.getExtras(), true);
+			//Toast.makeText(getActivity(),"Would have crashed becasue of wrong data type",Toast.LENGTH_SHORT).show();
 		}
 	}
 }

@@ -31,7 +31,6 @@ private PiChart mPiChart;
 private String userName;
 private int skillNumber;
 private String[] downloadResult3;
-private boolean needsToShowUserGainedNoXP;
 
 public XpDistributionChartFragment() {
 	// Empty constructor required for fragment subclasses
@@ -52,7 +51,7 @@ public void onSaveInstanceState(Bundle outState) {
 
 @Override
 public void onDetach() {
-	Log.e(TAG, "Fragment Detached");
+	//Log.e(TAG, "Fragment Detached");
 	super.onDetach();
 }
 
@@ -83,19 +82,16 @@ public Drawable onInflateContentView(ViewGroup container) {
 	userName = getArguments().getString(MainActivity.ARG_USERNAME);
 	skillNumber = getArguments().getInt(MainActivity.ARG_SKILL_NUMBER);
 	View rootView = inflater.inflate(R.layout.fragment_content_xp_pi_chart, container, true);
-	//switcherUserGainedNoXP = (ViewSwitcher) rootView.findViewById(R.id.switcher_user_got_no_xp);
 	mPiChart = ((PiChart) rootView.findViewById(R.id.xp_pi_chart_content));
 	getActivity().setTitle(userName);
 	return result;
 }
 
 @Override
-protected void applyDownloadResultFromIntent(Bundle bundle, boolean isFirstTimeData) {
+protected void applyDownloadResultFromIntent(Bundle bundle) {
 	downloadResult = bundle.getIntArray(DownloadIntentService.PARAM_XP_PER_SKILL);
 	downloadResult2 = bundle.getIntArray(DownloadIntentService.PARAM_XP_COLORS);
 	downloadResult3 = bundle.getStringArray(DownloadIntentService.PARAM_XP_SKILL_NAMES);
-	needsToShowUserGainedNoXP = bundle.getBoolean(DownloadIntentService.PARAM_XP_USER_GAINED_NO_XP);
-	Log.e(TAG, "needsToShowUserGainedNoXP updated from state : " + needsToShowUserGainedNoXP);
 	applyDownloadResult(downloadResult, downloadResult2, downloadResult3);
 
 }

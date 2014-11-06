@@ -115,16 +115,11 @@ public Drawable onInflateContentView(ViewGroup container) {
 }
 
 @Override
-protected void applyDownloadResultFromIntent(Bundle bundle, boolean isFirstTimeData) {
+protected void applyDownloadResultFromIntent(Bundle bundle) {
 	downloadResult = bundle.getDoubleArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE);
 	downloadResult2 = bundle.getStringArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE2);
 	downloadResult3 = bundle.getParcelableArrayList(DownloadIntentService.PARAM_PROGRESS_ENTRIES);
-	Log.e(TAG,"downloadResult null:"+(downloadResult == null));
-	if(isFirstTimeData) {
-		downloadResult3.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "#", "Date", "Rank", "Level", "Xp", "Xp Gained"}))));
-		downloadResult3.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", "", "", ""}))));
-		downloadResult3.add(0, new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", "", "", ""}))));
-	}
+	//Log.e(TAG,"downloadResult null:"+(downloadResult == null));
 	applyDownloadResult(downloadResult, downloadResult2, downloadResult3);
 
 }

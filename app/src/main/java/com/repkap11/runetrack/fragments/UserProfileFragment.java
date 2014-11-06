@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -30,12 +29,11 @@ import com.repkap11.runetrack.R;
 import com.repkap11.runetrack.TextDrawable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Locale;
 
 public class UserProfileFragment extends FragmentBase {
 
-private static final String TAG = "UserProfileFragment";
+private static final String TAG = UserProfileFragment.class.getSimpleName();
 public ArrayList<Parcelable> downloadResult;
 private ListView mList;
 private String userName;
@@ -48,13 +46,13 @@ public UserProfileFragment() {
 public void onSaveInstanceState(Bundle outState) {
 	super.onSaveInstanceState(outState);
 	if(downloadResult != null) {
-		outState.putParcelableArrayList(DownloadIntentService.PARAM_USERNAME, downloadResult);
+		//outState.putParcelableArrayList(DownloadIntentService.PARAM_USERNAME, downloadResult);
 	}
 }
 
 @Override
 public void onDetach() {
-	Log.e(TAG, "Fragment Detached");
+	//Log.e(TAG, "Fragment Detached");
 	super.onDetach();
 }
 
@@ -78,7 +76,7 @@ protected Intent requestDownload() {
 @Override
 public Drawable onInflateContentView(ViewGroup container) {
 	LayoutInflater inflater = LayoutInflater.from(this.getActivity());
-	Log.e(TAG, "On create view called userprofile fragment");
+	//Log.e(TAG, "On create view called userprofile fragment");
 	TextDrawable result = new TextDrawable(getResources(), R.string.ERROR_CODE_UNKNOWN);
 	View rootView = inflater.inflate(R.layout.fragment_content_shared_list, container, true);
 	userName = getArguments().getString(MainActivity.ARG_USERNAME);
@@ -88,15 +86,9 @@ public Drawable onInflateContentView(ViewGroup container) {
 }
 
 @Override
-protected void applyDownloadResultFromIntent(Bundle bundle, boolean isFirstTimeData) {
+protected void applyDownloadResultFromIntent(Bundle bundle) {
 	downloadResult = bundle.getParcelableArrayList(DownloadIntentService.PARAM_USERNAME);
-	Log.e(TAG,"downloadResult null:"+(downloadResult == null));
-	if(isFirstTimeData) {
-		DataTable topHeader = new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "Curnt ", "Runescape", "Stats", "Tod", "ay", "This", "Week"})));
-		DataTable header = new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "Level", "Xp", "Rank", "Lvls", "Xp", "Lvls", "Xp"})));
-		downloadResult.add(0, topHeader);
-		downloadResult.add(1, header);
-	}
+	//Log.e(TAG,"downloadResult null:"+(downloadResult == null));
 	applyDownloadResult(downloadResult);
 
 }

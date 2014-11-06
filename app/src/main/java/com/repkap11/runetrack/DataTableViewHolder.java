@@ -16,7 +16,7 @@ public ImageView mImageView;
 
 public DataTableViewHolder(ImageView skillIcon, ArrayList<View> outVar) {
 	if(skillIcon == null) {
-		Log.e(TAG, "Error, dont cache a null imageview");
+		Log.e(TAG, "Error, don't cache a null imageview");
 	}
 	this.mImageView = skillIcon;
 	this.mTextViews = outVar;

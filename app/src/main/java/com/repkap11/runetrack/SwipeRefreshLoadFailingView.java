@@ -12,7 +12,7 @@ private MainActivity mActivity;
 
 public SwipeRefreshLoadFailingView(Context context, AttributeSet attrs) {
 	super(context, attrs);
-	Log.e("TAG", "CustomView constructed");
+	//Log.e("TAG", "CustomView constructed");
 	mActivity = (MainActivity) context;
 	/*
 	TypedArray a = context.getTheme().obtainStyledAttributes(
@@ -27,13 +27,13 @@ public SwipeRefreshLoadFailingView(Context context, AttributeSet attrs) {
 	}
 	*/
 	mActivity.mCurrentFragment.inflateContentView(this);
-	Log.e("TAG", "View added to base");
+	//Log.e("TAG", "View added to base");
 
 }
 
 @Override
 public void findViewsWithText(ArrayList<View> outViews, CharSequence text, int flags) {
-	Log.e("TAG", "Method called" + outViews.size());
+	//Log.e("TAG", "Method called" + outViews.size());
 	super.findViewsWithText(outViews, text, flags);
 }
 }

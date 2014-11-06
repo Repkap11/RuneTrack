@@ -51,7 +51,6 @@ public static final String PARAM_USER_PROFILE_TABLE2 = "PARAM_USER_PROFILE_TABLE
 public static final String PARAM_XP_COLORS = "PARAM_XP_COLORS";
 public static final String PARAM_XP_PER_SKILL = "PARAM_XP_DEGREES";
 public static final String PARAM_XP_SKILL_NAMES = "PARAM_XP_SKILL_NAMES";
-public static final String PARAM_XP_USER_GAINED_NO_XP = "PARAM_XP_USER_GAINED_NO_XP";
 public static final String PARAM_PROGRESS_ENTRIES = "PARAM_PROGRESS_ENTRIES";
 public static final String PARAM_SKILL_NAME = "PARAM_SKILL_NAME";
 public static final String PARAM_PAGE_NUMBER = "PARAM_PAGE_NUMBER";
@@ -63,20 +62,17 @@ private static final String TAG = DownloadIntentService.class.getSimpleName();
 
 public DownloadIntentService() {
 	super(TAG);
-	Log.e(TAG, "DownloadIntentService constructed");
+	//Log.e(TAG, "DownloadIntentService constructed");
 }
 
 @Override
 public void onHandleIntent(Intent intent) {
-	Log.e(TAG, "Entering onHandleIntent");
-	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-	SharedPreferences.Editor editor = preferences.edit();
-	editor.putBoolean(FragmentBase.PARAM_IS_DOWNLOAD_PENDING, true);
-	editor.commit();
+	//Log.e(TAG, "Entering onHandleIntent");
 	Intent outIntent = new Intent();
 	outIntent.setAction(PARAM_USERNAME);
 	outIntent.addCategory(Intent.CATEGORY_DEFAULT);
 	String whichData = intent.getStringExtra(PARAM_WHICH_DATA);
+	outIntent.putExtra(PARAM_WHICH_DATA,whichData);
 	try {
 		if(whichData.equals(PARAM_USER_PROFILE_TABLE)) {
 			doUserProfileTable(intent, outIntent);
@@ -87,17 +83,14 @@ public void onHandleIntent(Intent intent) {
 		}else if(whichData.equals(PARAM_RUNETRACK_HIGH_SCORES)) {
 			doRuneTrackHighScores(intent, outIntent);
 		}
-		Log.e(TAG, "Error code:" + ERROR_CODE_SUCCESS);
+		//Log.e(TAG, "Error code:" + ERROR_CODE_SUCCESS);
 		outIntent.putExtra(PARAM_ERROR_CODE, ERROR_CODE_SUCCESS);
 	} catch(DownloadException e) {
-		Log.e(TAG, "Error code:" + e.mErrorCode);
+		//Log.e(TAG, "Error code:" + e.mErrorCode);
 		outIntent.putExtra(PARAM_ERROR_CODE, e.mErrorCode);
 	}
-	editor = preferences.edit();
-	editor.putBoolean(FragmentBase.PARAM_IS_DOWNLOAD_PENDING, false);
-	editor.commit();
 	sendBroadcast(outIntent);
-	Log.e(TAG, "Done handling download intent");
+	//Log.e(TAG, "Done handling download intent");
 }
 
 public static final int ERROR_CODE_SUCCESS = 0;
@@ -113,7 +106,7 @@ private void doUserProfileTable(Intent intent, Intent outIntent) throws Download
 	} catch(UnsupportedEncodingException e1) {
 		e1.printStackTrace();
 	}
-	Log.e(TAG, "Downloading " + userName);
+	//Log.e(TAG, "Downloading " + userName);
 	Document d;
 	try {
 		Connection c = Jsoup.connect("http://runetrack.com/profile.php?user=" + userName);
@@ -139,6 +132,10 @@ private void doUserProfileTable(Intent intent, Intent outIntent) throws Download
 			String weekxp = skill.child(7).text().replace(String.valueOf((char) 160), "");
 			skills.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[]{skillName, level, xp, rank, todayLevel, todayxp, weekLevel, weekxp}))));
 		}
+		DataTable topHeader = new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "Curnt ", "Runescape", "Stats", "Tod", "ay", "This", "Week"})));
+		DataTable header = new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "Level", "Xp", "Rank", "Lvls", "Xp", "Lvls", "Xp"})));
+		skills.add(0, topHeader);
+		skills.add(1, header);
 		outIntent.putExtra(PARAM_USERNAME, skills);
 	} catch(Exception e) {
 		Element body = d.body();
@@ -153,7 +150,7 @@ private void doUserProfileTable(Intent intent, Intent outIntent) throws Download
 			Node node = parent.childNode(2);
 			String text = node.toString().replace("&nbsp;", "");
 			text = text.replace("<b>", "").replace("</b>", "").trim();
-			Log.e(TAG, text);
+			//Log.e(TAG, text);
 			throw new DownloadException(ERROR_CODE_NOT_ON_RS_HIGHSCORES);
 			//String nodes = node.toString();
 			//Element element =  body.child(0).child(8).child(0).child(0).child(1);
@@ -177,7 +174,7 @@ private void doXpPiChart(Intent intent, Intent outIntent) throws DownloadExcepti
 	} catch(UnsupportedEncodingException e1) {
 		e1.printStackTrace();
 	}
-	Log.e(TAG, "Downloading pi chart" + userName);
+	//Log.e(TAG, "Downloading pi chart" + userName);
 	Document d;
 	try {
 		Connection c = Jsoup.connect("http://runetrack.com/includes/profile_chart.php?user=" + userName);
@@ -188,7 +185,7 @@ private void doXpPiChart(Intent intent, Intent outIntent) throws DownloadExcepti
 	}
 	try {
 		Element e = d.body();
-		Log.e(TAG, "Downloading done " + userName);
+		//Log.e(TAG, "Downloading done " + userName);
 		String xpString = e.text();
 		JSONObject mainObject = new JSONObject(xpString);
 		JSONArray temp = mainObject.getJSONArray("elements");
@@ -223,7 +220,6 @@ private void doXpPiChart(Intent intent, Intent outIntent) throws DownloadExcepti
 		outIntent.putExtra(PARAM_XP_PER_SKILL, xpPerSkill);
 		outIntent.putExtra(PARAM_XP_COLORS, colors);
 		outIntent.putExtra(PARAM_XP_SKILL_NAMES, skillNames);
-		outIntent.putExtra(PARAM_XP_USER_GAINED_NO_XP, userGainedNoXp);
 	} catch(Exception e) {
 		Log.e(TAG, "Caught exception downloading, pi chart is empty");
 		throw new DownloadException(ERROR_CODE_UNKNOWN);//TODO make known
@@ -245,6 +241,8 @@ private void doRuneTrackHighScores(Intent intent, Intent outIntent) throws Downl
 		throw new DownloadException(ERROR_CODE_RUNETRACK_DOWN);
 	}
 	try {
+		userEntries.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", ""}))));
+		userEntries.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"RT Rank", "Name", "RS Rank", "Level", "XP"}))));
 		Element ele = d.getElementsByClass("profile_table").get(1).child(0);
 		// Log.e(TAG,"ele:"+ele.text());
 		for(int i = 2; i < ele.children().size(); i++) {
@@ -265,7 +263,7 @@ private void doRuneTrackHighScores(Intent intent, Intent outIntent) throws Downl
 	} catch(Exception e) {
 		userEntries = null;
 		e.printStackTrace();
-		Log.e(TAG, "Caught exception downloading, highscores is empty");
+		//Log.e(TAG, "Caught exception downloading, highscores is empty");
 		throw new DownloadException(ERROR_CODE_UNKNOWN);//TODO make known
 	}
 
@@ -282,7 +280,7 @@ private void doGraphParseing(Intent intent, Intent outIntent) throws DownloadExc
 		throw new DownloadException(ERROR_CODE_RUNETRACK_DOWN);
 		//e1.printStackTrace();
 	}
-	Log.e(TAG, "Downloading graph" + userName + ":" + skillNumber);
+	//Log.e(TAG, "Downloading graph" + userName + ":" + skillNumber);
 	Document d;
 	try {
 		Connection c = Jsoup.connect("http://runetrack.com/includes/progress_chart.php?user=" + userName + "@" + skillNumber);
@@ -293,7 +291,7 @@ private void doGraphParseing(Intent intent, Intent outIntent) throws DownloadExc
 	}
 	try {
 		Element e = d.body();
-		Log.e(TAG, "Downloading done " + userName);
+		//Log.e(TAG, "Downloading done " + userName);
 		String xpString = e.text();
 
 		JSONObject mainObject = new JSONObject(xpString);
@@ -313,10 +311,10 @@ private void doGraphParseing(Intent intent, Intent outIntent) throws DownloadExc
 		}
 		outIntent.putExtra(PARAM_USER_PROFILE_TABLE, points);
 		outIntent.putExtra(PARAM_USER_PROFILE_TABLE2, labels);
-		Log.e(TAG, "Web Text:" + webText);
+		//Log.e(TAG, "Web Text:" + webText);
 	} catch(Exception e) {
 		e.printStackTrace();
-		Log.e(TAG, "Caught exception downloading, graph is empty");
+		//Log.e(TAG, "Caught exception downloading, graph is empty");
 		throw new DownloadException(ERROR_CODE_UNKNOWN);//TODO Figure it out
 	}
 
@@ -341,11 +339,14 @@ private void doProgressEntries(Intent intent, Intent outIntent) throws DownloadE
 		throw new DownloadException(ERROR_CODE_RUNETRACK_DOWN);
 	}
 	try {
-		ArrayList<Parcelable> entries;
-		Log.e(TAG, "Downloading done " + userName);
+
+		//Log.e(TAG, "Downloading done " + userName);
 		Element ele = d.getElementsByClass("profile_table").get(1).child(0);
-		Log.e(TAG, "Size2: " + ele.children().size());
-		entries = new ArrayList<Parcelable>(ele.children().size());
+		ArrayList<Parcelable> entries = new ArrayList<Parcelable>(ele.children().size()+3);
+		//Log.e(TAG, "Size2: " + ele.children().size());
+		entries.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "#", "Date", "Rank", "Level", "Xp", "Xp Gained"}))));
+		entries.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", "", "", ""}))));
+		entries.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", "", "", ""}))));
 		for(int i = 2; i < ele.children().size(); i++) {// For each
 			// skill
 			// Log.e(TAG,"Loop iteration "+i);

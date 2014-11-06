@@ -149,7 +149,7 @@ protected void onCreateAfterSetContentView(Bundle savedInstanceState) {
 	SharedPreferences prefs = this.getPreferences(MODE_PRIVATE);
 	mUserNamesToShow = getStringArrayPref(prefs, USER_PROFILE_NAMES);
 	if(mUserNamesToShow.size() == 0) {
-		Log.e(TAG, "Not using saved values");
+		//Log.e(TAG, "Not using saved values");
 		mUserNamesToShow = new ArrayList<String>(Arrays.asList(new String[]{"Repkap11", "Zezima", "Suomi", "Jake", "Drumgun", "Alkan"}));
 	}
 	mDrawerList.setOnChildClickListener(new DrawerChildClickListener());
@@ -267,7 +267,7 @@ public static void setStringArrayPref(SharedPreferences.Editor editor, String ke
 private class DrawerGroupClickListener implements ExpandableListView.OnGroupClickListener {
 	@Override
 	public boolean onGroupClick(ExpandableListView parent, View view, int groupPosition, long id) {
-		Log.e(TAG, "onGroupClick called");
+		//Log.e(TAG, "onGroupClick called");
 		if(view.getTag() != null) {
 			if(view.getTag().equals(DRAWER_IS_USER)) {
 				return false;
@@ -308,7 +308,7 @@ private class DrawerGroupClickListener implements ExpandableListView.OnGroupClic
 private class DrawerChildClickListener implements ExpandableListView.OnChildClickListener {
 	@Override
 	public boolean onChildClick(ExpandableListView parent, View view, int groupPosition, int childPosition, long id) {
-		Log.e(TAG, "onChildClick called:" + groupPosition + ":" + childPosition);
+		//Log.e(TAG, "onChildClick called:" + groupPosition + ":" + childPosition);
 		int selectPosition = groupPosition - 1;
 		if(childPosition == 0) {
 			selectUserProfileByName(mUserNamesToShow.get(selectPosition));// -1
@@ -339,7 +339,7 @@ private class DrawerGroupLongClickListener implements ListView.OnItemLongClickLi
 				// highscores
 				AlertDialog.Builder adb = new AlertDialog.Builder(DrawerHandlingActivity.this);
 				adb.setTitle("Delete User?");
-				Log.e(TAG, "selectPosition:" + selectPosition);
+				//Log.e(TAG, "selectPosition:" + selectPosition);
 				adb.setMessage("Are you sure you want to remove\n" + mUserNamesToShow.get(selectPosition));
 				adb.setPositiveButton("Yes", new AlertDialog.OnClickListener() {
 					public void onClick(DialogInterface dialog, int which) {

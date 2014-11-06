@@ -84,7 +84,7 @@ public boolean onOptionsItemSelected(MenuItem item) {
 public void selectRuneTrackHighScores(String skillName, int pageNumber) {
 	super.selectRuneTrackHighScores(skillName, pageNumber);
 	mIsShowingHighScores = true;
-	Log.e(TAG, "Selecting highscores for:" + skillName + " page #" + pageNumber);
+	//Log.e(TAG, "Selecting highscores for:" + skillName + " page #" + pageNumber);
 	mCurrentFragment = new RuneTrackHighScoresFragment();
 	Bundle args = new Bundle();
 
@@ -102,7 +102,7 @@ public void selectPiChart(String userName) {
 	super.selectPiChart(userName);
 	mIsShowingHighScores = false;
 	mUserName = userName;
-	Log.e(TAG, "Selecting pi chart for:" + userName);
+	//Log.e(TAG, "Selecting pi chart for:" + userName);
 	mCurrentFragment = new XpDistributionChartFragment();
 	Bundle args = new Bundle();
 	args.putString(ARG_USERNAME, userName);
@@ -197,7 +197,7 @@ public boolean onCreateOptionsMenu(final Menu menu) {
 	OnFocusChangeListener focus = new OnFocusChangeListener() {
 		@Override
 		public void onFocusChange(View v, boolean hasFocus) {
-			Log.e(TAG, "Focus Changed");
+			//Log.e(TAG, "Focus Changed");
 			if(!hasFocus) {
 				MenuItem searchItem = menu.findItem(R.id.action_bar_search_user);
 				SearchView searchView = (SearchView) searchItem.getActionView();

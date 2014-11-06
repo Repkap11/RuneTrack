@@ -49,7 +49,7 @@ protected void onDraw(Canvas canvas) {
 			canvas.drawArc(rectf, (temp + 90) % 360, mDegrees[i], true, paint);
 			temp += mDegrees[i];
 		}
-		Log.e(TAG, "EndAngle:" + temp);
+		//Log.e(TAG, "EndAngle:" + temp);
 	}
 }
 
