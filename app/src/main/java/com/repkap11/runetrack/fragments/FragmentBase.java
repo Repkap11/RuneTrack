@@ -171,17 +171,10 @@ public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle sa
 	mPullToRefreshLayout = (PullToRefreshLayout) rootView.findViewById(R.id.swipe_container);
 
 	//rootView.findViewsWithText(outViews, getResources().getString(R.string.pullable_to_refresh_view), View.FIND_VIEWS_WITH_CONTENT_DESCRIPTION);
-
 	ArrayList<View> outViews = new ArrayList<View>();
 	fixedFindViewsWithText(rootView, outViews, getResources().getString(R.string.pullable_to_refresh_view));
-	//Log.e("TAG", "Found scrollable lists:" + outViews.size());
 	View[] pullableViews = new View[0];
 	pullableViews = outViews.toArray(pullableViews);
-	for(int i = 0; i < pullableViews.length; i++) {
-		//if(pullableViews[i] != null) {
-		//Log.e("Test", "View a subview of pullable view");
-		//}
-	}
 	//Log.e("TAG", "Found scrollable lists:" + pullableViews.length);
 	ActionBarPullToRefresh.from(getActivity()).theseChildrenArePullable(pullableViews).listener(FragmentBase.this).setup(mPullToRefreshLayout);
 	//mDownloadedData = savedInstanceState;
@@ -196,28 +189,6 @@ public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle sa
 }
 
 private void applyData(boolean needsDownload) {
-	/*
-	SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this.getActivity());
-	boolean isDownloadPending = preferences.getBoolean(PARAM_IS_DOWNLOAD_PENDING, false);
-	//Log.e(TAG, "onResume mNeedsDownload:" + mNeedsDownload);
-	if(isDownloadPending) {
-		setSwitchedView(FragmentBase.SWITCHED_VIEW_SPINNER);
-	}else if(mDownloadedData != null) {
-		if(mDownloadErrorCode != DownloadIntentService.ERROR_CODE_SUCCESS) {
-			setErrorMessageBasedOnCode(mDownloadErrorCode);
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
-		}else {
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
-			try {
-				applyDownloadResultFromIntent(mDownloadedData, false);
-			}catch (Exception e){
-				//Toast.makeText(getActivity(),"Would have crashed",Toast.LENGTH_SHORT).show();
-				//This shouldn't happen, but does. Just try again....
-				reloadData();
-			}
-		}
-	}else {
-	*/
 	if(needsDownload) {
 		setSwitchedView(FragmentBase.SWITCHED_VIEW_SPINNER);
 		Intent msgIntent = requestDownload();
@@ -260,7 +231,7 @@ public void fixedFindViewsWithText(ViewGroup rootView, ArrayList<View> outViews,
 }
 
 private void setErrorMessageBasedOnCode(int errorCode) {
-	int errorMessageID = R.string.ERROR_CODE_UNKNOWN;
+	int errorMessageID;
 	switch(errorCode) {
 		case DownloadIntentService.ERROR_CODE_UNKNOWN:
 			errorMessageID = R.string.ERROR_CODE_UNKNOWN;
@@ -274,7 +245,11 @@ private void setErrorMessageBasedOnCode(int errorCode) {
 		case DownloadIntentService.ERROR_CODE_RUNETRACK_DOWN:
 			errorMessageID = R.string.ERROR_CODE_RUNETRACK_DOWN;
 			break;
+		case DownloadIntentService.ERROR_CODE_PI_CHART_USER_GAINED_NO_XP:
+			errorMessageID = R.string.ERROR_CODE_PI_CHART_USER_GAINED_NO_XP;
+			break;
 		default:
+			Log.e(TAG,"Unexpected error code:"+errorCode+" returned");
 			errorMessageID = R.string.ERROR_CODE_UNKNOWN;
 	}
 	setErrorMessage(errorMessageID);
@@ -289,8 +264,6 @@ public void onRefreshStarted(View view) {
 protected void refreshComplete() {
 	((MainActivity) getActivity()).refreshComplete();
 }
-
-public abstract boolean canScrollUp();
 
 protected abstract Intent requestDownload();
 
@@ -313,8 +286,6 @@ private void setSwitchedView(int state) {
 @Override
 public void onSaveInstanceState(Bundle outState) {
 	super.onSaveInstanceState(outState);
-	//outState.putBoolean(PARAM_IS_DOWNLOAD_PENDING, mIsDownloadPending);
-	//outState.putBoolean(PARAM_HAS_DOWNLOADED_DATA, mHasDownloadedData);
 	outState.putInt(DownloadIntentService.PARAM_ERROR_CODE, mDownloadErrorCode);
 }
 
@@ -336,7 +307,7 @@ public class ResponseReceiver extends BroadcastReceiver {
 		if(mWhichData.equals(whichData)) {
 			mDownloadedData = intent.getExtras();
 			mDownloadErrorCode = intent.getIntExtra(DownloadIntentService.PARAM_ERROR_CODE, mDownloadErrorCode);
-			//Log.e(TAG, "Got download resuit in base fragment error code:" + mDownloadErrorCode);
+			Log.e(TAG, "Got download result in base fragment error code:" + mDownloadErrorCode);
 			if(mDownloadErrorCode != DownloadIntentService.ERROR_CODE_SUCCESS) {
 				setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
 				setErrorMessageBasedOnCode(mDownloadErrorCode);

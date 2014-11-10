@@ -57,7 +57,7 @@ public static final String PARAM_PAGE_NUMBER = "PARAM_PAGE_NUMBER";
 public static final String PARAM_ERROR_CODE = "PARAM_USER_PROFILE_ERROR_CODE";
 
 public static final String PARAM_HIGH_SCORES_ENTRIES = "PARAM_HIGH_SCORES_ENTRIES";
-private static final int TIMEOUT = 5 * 1000;
+private static final int TIMEOUT = 8 * 1000;
 private static final String TAG = DownloadIntentService.class.getSimpleName();
 
 public DownloadIntentService() {
@@ -98,6 +98,7 @@ public static final int ERROR_CODE_UNKNOWN = 1;
 public static final int ERROR_CODE_NOT_ON_RS_HIGHSCORES = 2;
 public static final int ERROR_CODE_NOT_ENOUGH_VIEWS = 3;
 public static final int ERROR_CODE_RUNETRACK_DOWN = 4;
+public static final int ERROR_CODE_PI_CHART_USER_GAINED_NO_XP = 5;
 
 private void doUserProfileTable(Intent intent, Intent outIntent) throws DownloadException {
 	String userName = intent.getStringExtra(PARAM_USERNAME);
@@ -138,22 +139,10 @@ private void doUserProfileTable(Intent intent, Intent outIntent) throws Download
 		skills.add(1, header);
 		outIntent.putExtra(PARAM_USERNAME, skills);
 	} catch(Exception e) {
-		Element body = d.body();
-		Element parent = body.child(0).child(8);
-		if(parent.children().size() <= 6) {
-			Node node = parent.child(0).child(0).childNode(1);
-			String nodeString = node.toString();
-			Element element = body.child(0).child(8).child(0).child(0).child(1);
-			Log.e(TAG, nodeString);
-			throw new DownloadException(ERROR_CODE_NOT_ENOUGH_VIEWS);
-		}else {
-			Node node = parent.childNode(2);
-			String text = node.toString().replace("&nbsp;", "");
-			text = text.replace("<b>", "").replace("</b>", "").trim();
-			//Log.e(TAG, text);
-			throw new DownloadException(ERROR_CODE_NOT_ON_RS_HIGHSCORES);
-			//String nodes = node.toString();
-			//Element element =  body.child(0).child(8).child(0).child(0).child(1);
+		if (!(e instanceof DownloadException)) {
+			searchForError(d);
+		} else {
+			throw (DownloadException)e;
 		}
 	}
 }
@@ -194,9 +183,12 @@ private void doXpPiChart(Intent intent, Intent outIntent) throws DownloadExcepti
 		JSONArray degreesArray = null;
 		try {
 			degreesArray = temp2.getJSONArray("values");
+			degreesArray.length();
 		} catch(JSONException ex) {
-			userGainedNoXp = true;
+			Log.e(TAG,"Caught no xp error");
+			throw new DownloadException(ERROR_CODE_PI_CHART_USER_GAINED_NO_XP);
 		}
+
 		// Log.e(TAG, degreesArray.toString(2));
 		xpPerSkill = new int[degreesArray.length()];// null degreesArray
 		// means userGainedNoXp
@@ -221,9 +213,12 @@ private void doXpPiChart(Intent intent, Intent outIntent) throws DownloadExcepti
 		outIntent.putExtra(PARAM_XP_COLORS, colors);
 		outIntent.putExtra(PARAM_XP_SKILL_NAMES, skillNames);
 	} catch(Exception e) {
-		Log.e(TAG, "Caught exception downloading, pi chart is empty");
-		throw new DownloadException(ERROR_CODE_UNKNOWN);//TODO make known
-
+		if (!(e instanceof DownloadException)) {
+			Log.e(TAG, "Caught exception downloading, pi chart is empty");
+			throw new DownloadException(ERROR_CODE_UNKNOWN);
+		} else {
+			throw (DownloadException)e;
+		}
 	}
 }
 
@@ -261,10 +256,11 @@ private void doRuneTrackHighScores(Intent intent, Intent outIntent) throws Downl
 		outIntent.addCategory(Intent.CATEGORY_DEFAULT);
 		outIntent.putExtra(PARAM_HIGH_SCORES_ENTRIES, userEntries);
 	} catch(Exception e) {
-		userEntries = null;
-		e.printStackTrace();
-		//Log.e(TAG, "Caught exception downloading, highscores is empty");
-		throw new DownloadException(ERROR_CODE_UNKNOWN);//TODO make known
+		if (!(e instanceof DownloadException)) {
+			searchForError(d);
+		} else {
+			throw (DownloadException)e;
+		}
 	}
 
 }
@@ -313,9 +309,11 @@ private void doGraphParseing(Intent intent, Intent outIntent) throws DownloadExc
 		outIntent.putExtra(PARAM_USER_PROFILE_TABLE2, labels);
 		//Log.e(TAG, "Web Text:" + webText);
 	} catch(Exception e) {
-		e.printStackTrace();
-		//Log.e(TAG, "Caught exception downloading, graph is empty");
-		throw new DownloadException(ERROR_CODE_UNKNOWN);//TODO Figure it out
+		if (!(e instanceof DownloadException)) {
+			searchForError(d);
+		} else {
+			throw (DownloadException)e;
+		}
 	}
 
 }
@@ -331,7 +329,6 @@ private void doProgressEntries(Intent intent, Intent outIntent) throws DownloadE
 	Document d;
 	try {
 		Connection c = Jsoup.connect("http://runetrack.com/progress.php?user=" + userName + "&skill=" + skillName);
-
 		//Connection c = Jsoup.connect("http://runetrack.com/progress.php?user=" + userName + "&skill=" + skillName + "&view=all#more");
 		c.timeout(TIMEOUT);
 		d = c.get();
@@ -344,9 +341,9 @@ private void doProgressEntries(Intent intent, Intent outIntent) throws DownloadE
 		Element ele = d.getElementsByClass("profile_table").get(1).child(0);
 		ArrayList<Parcelable> entries = new ArrayList<Parcelable>(ele.children().size()+3);
 		//Log.e(TAG, "Size2: " + ele.children().size());
+		entries.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", "", "", ""}))));
+		entries.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", "", "", ""}))));
 		entries.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "#", "Date", "Rank", "Level", "Xp", "Xp Gained"}))));
-		entries.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", "", "", ""}))));
-		entries.add(new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "", "", "", "", "", ""}))));
 		for(int i = 2; i < ele.children().size(); i++) {// For each
 			// skill
 			// Log.e(TAG,"Loop iteration "+i);
@@ -364,7 +361,39 @@ private void doProgressEntries(Intent intent, Intent outIntent) throws DownloadE
 		}
 		outIntent.putExtra(PARAM_PROGRESS_ENTRIES, entries);
 	} catch(Exception e) {
-		throw new DownloadException(ERROR_CODE_UNKNOWN);//TODO figure out what one
+		if (!(e instanceof DownloadException)) {
+			searchForError(d);
+		} else {
+			throw (DownloadException)e;
+		}
+	}
+}
+private void searchForError(Document d)throws DownloadException{
+	try {
+		Element body = d.body();
+		Element parent = body.child(0).child(8);
+		if(parent.children().size() <= 6) {
+			Node node = parent.child(0).child(0).childNode(1);
+			String nodeString = node.toString();
+			Element element = body.child(0).child(8).child(0).child(0).child(1);
+			Log.e(TAG, nodeString);
+			throw new DownloadException(ERROR_CODE_NOT_ENOUGH_VIEWS);
+		}else {
+			Node node = parent.childNode(2);
+			String text = node.toString().replace("&nbsp;", "");
+			text = text.replace("<b>", "").replace("</b>", "").trim();
+			Log.e(TAG, text);
+			throw new DownloadException(ERROR_CODE_NOT_ON_RS_HIGHSCORES);
+			//String nodes = node.toString();
+			//Element element =  body.child(0).child(8).child(0).child(0).child(1);
+		}
+	}catch (Exception e){
+		Log.e(TAG, "Failed to find an error message");
+		if (!(e instanceof DownloadException)) {
+			throw new DownloadException(ERROR_CODE_UNKNOWN);
+		} else {
+			throw (DownloadException)e;
+		}
 	}
 }
 

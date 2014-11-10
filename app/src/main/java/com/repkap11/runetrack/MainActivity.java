@@ -239,11 +239,4 @@ protected void onSaveInstanceState(Bundle outState) {
 	outState.putString(ARG_USERNAME, mUserName);
 	super.onSaveInstanceState(outState);
 }
-
-public boolean canFragmentScrollUp() {
-	if(mCurrentFragment != null) {
-		return mCurrentFragment.canScrollUp();
-	}
-	return true;
-}
 }

@@ -1,0 +1,4 @@
+Added better error messages.
+Fixed occasional double download when rotating the screen.
+Made internal structural changes allowing new screens to be created easier.
+

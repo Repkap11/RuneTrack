@@ -5,3 +5,8 @@
 .DS_Store
 /build
 *.map
+
+app/gradle.properties
+app/RuneTrackKeyStore
+app/build
+app/mirror

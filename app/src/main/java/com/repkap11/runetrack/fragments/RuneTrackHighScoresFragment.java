@@ -11,7 +11,6 @@ import android.content.Intent;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.os.Parcelable;
-import android.util.Log;
 import android.util.TypedValue;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -31,7 +30,6 @@ import com.repkap11.runetrack.R;
 import com.repkap11.runetrack.TextDrawable;
 
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Locale;
 
 public class RuneTrackHighScoresFragment extends FragmentBase {
@@ -39,9 +37,6 @@ public class RuneTrackHighScoresFragment extends FragmentBase {
 public static final String TAG = "RuneTrackHighScoresFragment";
 public ArrayList<Parcelable> downloadResult;
 private ListView mProgressHolder;
-private ResponseReceiver receiver;
-private boolean needsDownload = true;
-private boolean needsToShowDownloadFailure = false;
 private int pageNumber;
 private String skillName;
 
@@ -50,36 +45,8 @@ public RuneTrackHighScoresFragment() {
 }
 
 @Override
-public void onSaveInstanceState(Bundle outState) {
-	super.onSaveInstanceState(outState);
-	if(downloadResult != null) {
-		//outState.putParcelableArrayList(DownloadIntentService.PARAM_HIGH_SCORES_ENTRIES, downloadResult);
-		//outState.putBoolean("needsToShowDownloadFailure", needsToShowDownloadFailure);
-	}
-}
-
-@Override
-public void onPause() {
-	super.onPause();
-	if(receiver != null) {
-		getActivity().unregisterReceiver(receiver);
-	}
-}
-
-@Override
-public void onDetach() {
-	//Log.e(TAG, "Fragment Detached");
-	super.onDetach();
-}
-
-@Override
 public void reloadData() {
 	((MainActivity) this.getActivity()).selectRuneTrackHighScores(skillName, pageNumber);
-}
-
-@Override
-public boolean canScrollUp() {
-	return mProgressHolder.canScrollVertically(-1);
 }
 
 @Override
@@ -110,7 +77,7 @@ protected void applyDownloadResultFromIntent(Bundle bundle) {
 	applyDownloadResult(downloadResult);
 }
 
-public void applyDownloadResult(ArrayList<Parcelable> result) {
+private void applyDownloadResult(ArrayList<Parcelable> result) {
 	refreshComplete();
 	mProgressHolder.setAdapter(new ArrayAdapter<Parcelable>(getActivity(), 0, result) {
 		private DataTableBounds bounds;

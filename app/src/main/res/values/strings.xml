@@ -10,19 +10,21 @@
 	<string name="search_user">Search User</string>
 	<string name="drag_down_to_try_again">Drag down to try again.</string>
 	<string name="runetrack_highscores">RuneTrack High Scores</string>
-	<string name="xp_pi_chart_download_error_message">Failed to load weekly xp pi chart.</string>
-	<string name="xp_pi_chart_no_weekly_xp_error_message">User gained to xp this week.</string>
-	<string name="history_graph_download_error_message">Failed to load history information.</string>
-	<string name="highscores_download_error_message">Failed to load highscores information.</string>
-	<string name="pull_to_refresh">Pull to refresh...</string>
+
+
+	<string name="pull_to_refresh">Pull to refresh&#8230;</string>
 	<!-- Add this as the content description of a listview or grid view to make it pull to refreshable-->
 	<string name="pullable_to_refresh_view">pullable_to_refresh_view</string>
 
+
+	<string name="xp_pi_chart_download_error_message">Failed to load weekly xp pi chart.</string>
+	<string name="history_graph_download_error_message">Failed to load history information.</string>
+	<string name="highscores_download_error_message">Failed to load highscores information.</string>
 
 	<string name="ERROR_CODE_SUCCESS">No error</string>
 	<string name="ERROR_CODE_UNKNOWN">Failed to load user profile for unknown reason.</string>
 	<string name="ERROR_CODE_NOT_ON_RS_HIGHSCORES">User not on RS highscores.</string>
 	<string name="ERROR_CODE_NOT_ENOUGH_VIEWS">Visit www.RuneTrack.com to unlock your account.</string>
-	<string name="ERROR_CODE_RUNETRACK_DOWN">Unable to connect to runetrack.com</string>
-
+	<string name="ERROR_CODE_RUNETRACK_DOWN">Unable to connect to RuneTrack.com</string>
+	<string name="ERROR_CODE_PI_CHART_USER_GAINED_NO_XP">User gained no XP this week.</string>
 </resources>

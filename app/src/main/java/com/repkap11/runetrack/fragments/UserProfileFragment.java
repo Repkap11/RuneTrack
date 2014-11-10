@@ -42,27 +42,8 @@ public UserProfileFragment() {
 	// Empty constructor required for fragment subclasses
 }
 
-@Override
-public void onSaveInstanceState(Bundle outState) {
-	super.onSaveInstanceState(outState);
-	if(downloadResult != null) {
-		//outState.putParcelableArrayList(DownloadIntentService.PARAM_USERNAME, downloadResult);
-	}
-}
-
-@Override
-public void onDetach() {
-	//Log.e(TAG, "Fragment Detached");
-	super.onDetach();
-}
-
 public void reloadData() {
 	((MainActivity) this.getActivity()).selectUserProfileByName(userName);
-}
-
-@Override
-public boolean canScrollUp() {
-	return mList.canScrollVertically(-1);
 }
 
 @Override
@@ -88,12 +69,11 @@ public Drawable onInflateContentView(ViewGroup container) {
 @Override
 protected void applyDownloadResultFromIntent(Bundle bundle) {
 	downloadResult = bundle.getParcelableArrayList(DownloadIntentService.PARAM_USERNAME);
-	//Log.e(TAG,"downloadResult null:"+(downloadResult == null));
 	applyDownloadResult(downloadResult);
 
 }
 
-public void applyDownloadResult(ArrayList<Parcelable> result) {
+private void applyDownloadResult(ArrayList<Parcelable> result) {
 	refreshComplete();
 	if(result == null) {
 		//Log.e(TAG, "Result Null");
@@ -186,30 +166,4 @@ public void applyDownloadResult(ArrayList<Parcelable> result) {
 		}
 	});
 }
-/*
-public class ResponseReceiver extends BroadcastReceiver {
-
-	@Override
-	public void onReceive(Context context, Intent intent) {
-		if(DownloadIntentService.ERROR_CODE_SUCCESS == onRecievedDownloadResult(intent))
-		// Log.e(TAG, "before crash");
-		{
-			downloadResult = intent.getParcelableArrayListExtra(DownloadIntentService.PARAM_USERNAME);
-		}
-		mDownloadErrorCode = intent.getIntExtra(DownloadIntentService.PARAM_ERROR_CODE, mDownloadErrorCode);
-		if(mDownloadErrorCode != DownloadIntentService.ERROR_CODE_SUCCESS || downloadResult == null || downloadResult.size() == 0) {
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_RETRY);
-			needsToShowDownloadFailure = true;
-			setErrorMessageBasedOnCode(mDownloadErrorCode);
-		}else {
-			DataTable topHeader = new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "Curnt ", "Runescape", "Stats", "Tod", "ay", "This", "Week"})));
-			DataTable header = new DataTable(new ArrayList<String>(Arrays.asList(new String[]{"", "Level", "Xp", "Rank", "Lvls", "Xp", "Lvls", "Xp"})));
-			downloadResult.add(0, topHeader);
-			downloadResult.add(1, header);
-			setSwitchedView(FragmentBase.SWITCHED_VIEW_CONTENT);
-			applyDownloadResult(downloadResult);
-		}
-	}
-}
-*/
 }

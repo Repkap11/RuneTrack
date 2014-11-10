@@ -45,9 +45,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Locale;
 
-/**
- * Fragment that appears in the "content_frame", shows a planet
- */
 public class UserProgressFragment extends FragmentBase {
 
 public static final String TAG = "UserProgressFragment";
@@ -67,26 +64,15 @@ public UserProgressFragment() {
 public void onSaveInstanceState(Bundle outState) {
 	super.onSaveInstanceState(outState);
 	if(downloadResult != null) {
-		outState.putDoubleArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE, downloadResult);
-		outState.putStringArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE2, downloadResult2);
-		outState.putParcelableArrayList(DownloadIntentService.PARAM_PROGRESS_ENTRIES, downloadResult3);
+		//outState.putDoubleArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE, downloadResult);
+		//outState.putStringArray(DownloadIntentService.PARAM_USER_PROFILE_TABLE2, downloadResult2);
+		//outState.putParcelableArrayList(DownloadIntentService.PARAM_PROGRESS_ENTRIES, downloadResult3);
 	}
-}
-
-@Override
-public void onDetach() {
-	//Log.e(TAG, "Fragment Detached");
-	super.onDetach();
 }
 
 @Override
 public void reloadData() {
 	((MainActivity) this.getActivity()).selectHistoryGraph(userName, skillNumber, skillName);
-}
-
-@Override
-public boolean canScrollUp() {
-	return mProgressHolder.canScrollVertically(-1);
 }
 
 @Override
@@ -124,7 +110,7 @@ protected void applyDownloadResultFromIntent(Bundle bundle) {
 
 }
 
-public void applyDownloadResult(final double[] result, final String[] result2, ArrayList<Parcelable> result3) {
+private void applyDownloadResult(final double[] result, final String[] result2, ArrayList<Parcelable> result3) {
 	refreshComplete();
 	mProgressHolder.setAdapter(new ArrayAdapter<Parcelable>(getActivity(), 0, result3) {
 		private DataTableBounds bounds;
@@ -205,7 +191,7 @@ public void applyDownloadResult(final double[] result, final String[] result2, A
 	});
 }
 
-protected View getGraphHeader(View convertView) {
+private View getGraphHeader(View convertView) {
 	if(convertView != null) {
 		return convertView;
 	}
@@ -221,7 +207,7 @@ protected View getGraphHeader(View convertView) {
 	return returnView;
 }
 
-protected View getGraphView(View convertView, final double[] result, final String[] result2) {
+private View getGraphView(View convertView, final double[] result, final String[] result2) {
 	if(convertView != null) {
 		return convertView;
 	}
@@ -230,6 +216,8 @@ protected View getGraphView(View convertView, final double[] result, final Strin
 	LinearLayout returnView = (LinearLayout) inflater.inflate(R.layout.fragment_table_row_user_progress_graph_view_container, mProgressHolder, false);
 
 	final GraphView graphView = new LineGraphView(this.getActivity(), "");
+	graphView.setPadding(10,10,10,10);
+	graphView.setManualYMinBound(0);
 	graphView.getGraphViewStyle().setGridColor(Color.WHITE);
 	graphView.getGraphViewStyle().setHorizontalLabelsColor(Color.BLACK);
 	graphView.getGraphViewStyle().setVerticalLabelsColor(Color.BLACK);

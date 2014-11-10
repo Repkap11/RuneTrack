@@ -42,28 +42,8 @@ public void onCreate(Bundle savedInstanceState) {
 }
 
 @Override
-public void onSaveInstanceState(Bundle outState) {
-	super.onSaveInstanceState(outState);
-	outState.putIntArray(DownloadIntentService.PARAM_XP_COLORS, downloadResult2);
-	outState.putIntArray(DownloadIntentService.PARAM_XP_PER_SKILL, downloadResult);
-	outState.putStringArray(DownloadIntentService.PARAM_XP_SKILL_NAMES, downloadResult3);
-}
-
-@Override
-public void onDetach() {
-	//Log.e(TAG, "Fragment Detached");
-	super.onDetach();
-}
-
-@Override
 public void reloadData() {
 	((MainActivity) this.getActivity()).selectPiChart(userName);
-}
-
-@Override
-public boolean canScrollUp() {
-	//Log.e(TAG,"XP Chart Scroll called, returned false");
-	return false;
 }
 
 @Override
@@ -96,9 +76,10 @@ protected void applyDownloadResultFromIntent(Bundle bundle) {
 
 }
 
-public void applyDownloadResult(final int[] downloadResult4, final int[] downloadResult2, String[] downloadResult3) {
-	refreshComplete();
+private void applyDownloadResult(final int[] downloadResult4, final int[] downloadResult2, String[] downloadResult3) {
 	mPiChart.setPiChartData(downloadResult4, downloadResult2, downloadResult3);
+	refreshComplete();
+
 
 }
 }
