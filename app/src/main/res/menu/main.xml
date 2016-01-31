@@ -93,6 +93,9 @@
 			<item
 				android:numericShortcut="{"
 				android:title="Divination" />
+			<item
+				android:numericShortcut="|"
+				android:title="Invention" />
 		</menu>
 	</item>
 

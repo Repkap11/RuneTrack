@@ -8,8 +8,8 @@ android {
         applicationId "com.repkap11.runetrack"
         minSdkVersion 14
         targetSdkVersion 21
-        versionCode 5
-        versionName "5.0"
+        versionCode 6
+        versionName "6.0"
     }
     signingConfigs {
         release {
@@ -28,14 +28,14 @@ android {
         release {
             debuggable = false
             signingConfig signingConfigs.release
-            runProguard true
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
         }
         debugRelease.initWith(buildTypes.release)
         debugRelease {
             debuggable = true
             signingConfig signingConfigs.release
-            runProguard true
+            minifyEnabled true
             proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules-debug.pro'
         }
     }
